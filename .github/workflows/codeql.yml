@@ -90,29 +90,19 @@ jobs:
     name: Java CodeQL
     needs: classify
     if: ${{ always() && (needs.classify.result != 'success' || needs.classify.outputs.docs_only != 'true') }}
-    runs-on: [self-hosted, Linux, X64, resource-heavy]
+    runs-on: [self-hosted, X64, resource-heavy]
     timeout-minutes: 20
 
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Detect Maven project
-        id: project
-        shell: bash
-        run: |
-          if [[ -f pom.xml ]]; then
-            echo "exists=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "exists=false" >> "${GITHUB_OUTPUT}"
-          fi
-
       - name: Bootstrap pending
-        if: steps.project.outputs.exists != 'true'
+        if: ${{ hashFiles('pom.xml') == '' }}
         run: echo "pom.xml is not present yet; CodeQL analysis will activate after project bootstrap."
 
       - name: Set up Java 25
-        if: steps.project.outputs.exists == 'true'
+        if: ${{ hashFiles('pom.xml') != '' }}
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
@@ -120,15 +110,15 @@ jobs:
           cache: maven
 
       - name: Initialize CodeQL
-        if: steps.project.outputs.exists == 'true'
+        if: ${{ hashFiles('pom.xml') != '' }}
         uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
         with:
           languages: java-kotlin
 
       - name: Build
-        if: steps.project.outputs.exists == 'true'
+        if: ${{ hashFiles('pom.xml') != '' }}
         run: mvn -B -ntp -DskipTests package
 
       - name: Analyze
-        if: steps.project.outputs.exists == 'true'
+        if: ${{ hashFiles('pom.xml') != '' }}
         uses: github/codeql-action/analyze@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v4.37.3
