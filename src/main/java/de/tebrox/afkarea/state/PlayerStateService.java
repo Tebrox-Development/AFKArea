@@ -1,5 +1,7 @@
 package de.tebrox.afkarea.state;
 
+import org.bukkit.entity.Player;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
@@ -22,6 +24,19 @@ public final class PlayerStateService {
 
     public boolean isAfk(UUID playerId) {
         return getState(playerId) != PlayerState.ACTIVE;
+    }
+
+    public PlayerState toggleManualAfk(UUID playerId) {
+        PlayerState current = getState(playerId);
+
+        if(current == PlayerState.AFK_AREA) {
+            return PlayerState.AFK_AREA;
+        }
+
+        PlayerState next = current == PlayerState.AFK ? PlayerState.ACTIVE : PlayerState.AFK;
+        setState(playerId, next);
+
+        return next;
     }
 
     public void clear(UUID playerId) {

@@ -1,6 +1,7 @@
 package de.tebrox.afkarea.bootstrap;
 
 import de.tebrox.afkarea.command.AFKAreaCommands;
+import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.message.MessageService;
@@ -36,6 +37,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         playerStateService = new PlayerStateService();
 
         VertexCoreApi.get().commands().register(this, new AFKAreaCommands(this));
+        VertexCoreApi.get().commands().register(this, new AfkCommand(this));
 
         new Metrics(this, BSTATS_PLUGIN_ID);
         getLogger().info("AFKArea has been enabled");
