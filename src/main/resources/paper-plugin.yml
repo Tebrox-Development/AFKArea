@@ -1,0 +1,31 @@
+name: AFKArea
+version: "${project.version}"
+main: de.tebrox.afkarea.bootstrap.AFKAreaPlugin
+api-version: "1.21"
+load: STARTUP
+
+authors:
+  - Tebrox
+
+description: >
+  Configurable AFK areas with automatic AFK handling,
+  player visibility control and weighted rewards.
+
+website: https://github.com/Tebrox-Development/AFKArea
+
+dependencies:
+  server:
+    VertexCore:
+      load: BEFORE
+      required: true
+      join-classpath: true
+
+    WorldGuard:
+      load: BEFORE
+      required: false
+      join-classpath: true
+
+    PlaceholderAPI:
+      load: BEFORE
+      required: false
+      join-classpath: true
