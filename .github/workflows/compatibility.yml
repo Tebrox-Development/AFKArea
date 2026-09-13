@@ -88,29 +88,19 @@ jobs:
     name: Paper 1.21.4 / Java 21 baseline
     needs: classify
     if: ${{ always() && (needs.classify.result != 'success' || needs.classify.outputs.docs_only != 'true') }}
-    runs-on: [self-hosted, Linux, X64, resource-heavy]
+    runs-on: [self-hosted, X64, resource-heavy]
     timeout-minutes: 15
 
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Detect Maven project
-        id: project
-        shell: bash
-        run: |
-          if [[ -f pom.xml ]]; then
-            echo "exists=true" >> "${GITHUB_OUTPUT}"
-          else
-            echo "exists=false" >> "${GITHUB_OUTPUT}"
-          fi
-
       - name: Bootstrap pending
-        if: steps.project.outputs.exists != 'true'
+        if: ${{ hashFiles('pom.xml') == '' }}
         run: echo "pom.xml is not present yet; compatibility verification will activate after project bootstrap."
 
       - name: Set up Java 25 build toolchain
-        if: steps.project.outputs.exists == 'true'
+        if: ${{ hashFiles('pom.xml') != '' }}
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
         with:
           distribution: temurin
@@ -118,5 +108,5 @@ jobs:
           cache: maven
 
       - name: Verify against Paper 1.21.4 API
-        if: steps.project.outputs.exists == 'true'
+        if: ${{ hashFiles('pom.xml') != '' }}
         run: mvn -B -ntp -Dpaper.version=1.21.4-R0.1-SNAPSHOT verify
