@@ -4,6 +4,7 @@ import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.message.MessageService;
+import de.tebrox.afkarea.state.PlayerStateService;
 import de.tebrox.vertexCore.VertexCoreApi;
 import de.tebrox.vertexCore.config.Config;
 import org.bstats.bukkit.Metrics;
@@ -20,6 +21,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     private MessageService messageService;
 
+    private PlayerStateService playerStateService;
+
     @Override
     public void onEnable() {
         configFile = new Config<>(this, AFKAreaConfig.class);
@@ -30,6 +33,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         messageService = new MessageService(() -> messages);
 
+        playerStateService = new PlayerStateService();
+
         VertexCoreApi.get().commands().register(this, new AFKAreaCommands(this));
 
         new Metrics(this, BSTATS_PLUGIN_ID);
@@ -39,6 +44,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         VertexCoreApi.get().commands().unregisterAll(this);
+        playerStateService.clearAll();
 
         getLogger().info("AFKArea has been disabled");
     }
@@ -54,5 +60,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     public MessageService messageService() {
         return messageService;
+    }
+
+    public PlayerStateService playerStateService() {
+        return playerStateService;
     }
 }
