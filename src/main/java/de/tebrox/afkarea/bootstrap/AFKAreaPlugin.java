@@ -1,5 +1,6 @@
 package de.tebrox.afkarea.bootstrap;
 
+import de.tebrox.afkarea.activity.ActivityListener;
 import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
@@ -38,6 +39,11 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         playerStateService = new PlayerStateService();
         activityService = new ActivityService();
+
+        getServer().getPluginManager().registerEvents(new ActivityListener(activityService, playerStateService), this);
+
+        getServer().getOnlinePlayers().forEach(player -> activityService.track(player.getUniqueId())
+        );
 
         VertexCoreApi.get().commands().register(this, new AFKAreaCommands(this));
         VertexCoreApi.get().commands().register(this, new AfkCommand(this));

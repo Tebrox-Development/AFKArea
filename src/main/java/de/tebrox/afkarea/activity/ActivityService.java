@@ -1,12 +1,12 @@
 package de.tebrox.afkarea.activity;
 
 import java.time.Duration;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 public final class ActivityService {
-    private final Map<UUID, Long> lastActivity = new HashMap<>();
+    private final Map<UUID, Long> lastActivity = new ConcurrentHashMap<>();
 
     public void track(UUID playerId) {
         lastActivity.putIfAbsent(playerId, System.currentTimeMillis());
