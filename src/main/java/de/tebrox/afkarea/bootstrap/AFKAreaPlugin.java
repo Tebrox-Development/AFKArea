@@ -7,7 +7,9 @@ import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
+import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
+import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import de.tebrox.vertexCore.VertexCoreApi;
 import de.tebrox.vertexCore.config.Config;
@@ -29,6 +31,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private ActivityService activityService;
     private IdleTracker idleTracker;
 
+    private TabListService tabListService;
+
     @Override
     public void onEnable() {
         configFile = new Config<>(this, AFKAreaConfig.class);
@@ -42,10 +46,12 @@ public final class AFKAreaPlugin extends JavaPlugin {
         playerStateService = new PlayerStateService();
         activityService = new ActivityService();
 
-        idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService);
+        tabListService = new TabListService(() -> messages, messageService);
+
+        idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService);
         idleTracker.start();
 
-        getServer().getPluginManager().registerEvents(new ActivityListener(this, activityService, playerStateService, () -> messages, messageService), this);
+        getServer().getPluginManager().registerEvents(new ActivityListener(this, activityService, playerStateService, () -> messages, messageService, tabListService), this);
 
         getServer().getOnlinePlayers().forEach(player -> activityService.track(player.getUniqueId())
         );
@@ -63,6 +69,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         VertexCoreApi.get().commands().unregisterAll(this);
 
+        tabListService.restoreAll(getServer().getOnlinePlayers());
+
         playerStateService.clearAll();
         activityService.clearAll();
 
@@ -72,6 +80,10 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public void reloadConfigs() {
         config = configFile.loadConfigObject();
         messages = messageFile.loadConfigObject();
+
+        getServer().getOnlinePlayers().stream()
+                .filter(player -> playerStateService.getState(player.getUniqueId()) == PlayerState.AFK)
+                .forEach(tabListService::refreshAfk);
     }
 
     public MessageConfig messages() {
@@ -88,5 +100,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     public ActivityService activityService() {
         return activityService;
+    }
+
+    public TabListService tabListService() {
+        return tabListService;
     }
 }

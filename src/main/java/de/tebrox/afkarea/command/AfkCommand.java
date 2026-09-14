@@ -26,8 +26,10 @@ public final class AfkCommand {
         PlayerState state = plugin.playerStateService().toggleManualAfk(player.getUniqueId());
 
         if(state == PlayerState.AFK) {
+            plugin.tabListService().applyAfk(player);
             plugin.messageService().send(player, plugin.messages().afkEnabled);
         }else if(state == PlayerState.ACTIVE) {
+            plugin.tabListService().clearAfk(player);
             plugin.messageService().send(player, plugin.messages().afkDisabled);
         }
     }

@@ -17,13 +17,19 @@ public final class MessageService {
         this.config = config;
     }
 
+    public Component parse(String message, TagResolver... resolvers) {
+        if(message == null || message.isBlank()) return Component.empty();
+
+        return miniMessage.deserialize(message, resolvers);
+    }
+
     public void send(Audience audience, String message, TagResolver... resolvers) {
         if(message == null || message.isBlank()) {
             return;
         }
 
-        Component prefix = miniMessage.deserialize(config.get().prefix);
-        Component content = miniMessage.deserialize(message, resolvers);
+        Component prefix = parse(config.get().prefix);
+        Component content = parse(message, resolvers);
 
         audience.sendMessage(prefix.append(content));
     }

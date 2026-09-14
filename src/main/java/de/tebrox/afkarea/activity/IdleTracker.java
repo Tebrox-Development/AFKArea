@@ -2,6 +2,7 @@ package de.tebrox.afkarea.activity;
 
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
+import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
@@ -20,6 +21,7 @@ public final class IdleTracker {
     private final Supplier<AFKAreaConfig> config;
     private final Supplier<MessageConfig> messages;
     private final MessageService messageService;
+    private final TabListService tabListService;
 
     private BukkitTask task;
 
@@ -29,7 +31,8 @@ public final class IdleTracker {
             PlayerStateService stateService,
             Supplier<AFKAreaConfig> config,
             Supplier<MessageConfig> messages,
-            MessageService messageService
+            MessageService messageService,
+            TabListService tabListService
     ) {
         this.plugin = plugin;
         this.activityService = activityService;
@@ -37,6 +40,7 @@ public final class IdleTracker {
         this.config = config;
         this.messages = messages;
         this.messageService = messageService;
+        this.tabListService = tabListService;
     }
 
     public void start() {
@@ -63,6 +67,7 @@ public final class IdleTracker {
             if(activityService.getIdleDuration(playerId).compareTo(afkTimout) < 0) continue;
 
             stateService.setState(playerId, PlayerState.AFK);
+            tabListService.applyAfk(player);
 
             messageService.send(player, messages.get().afkEnabled);
         }

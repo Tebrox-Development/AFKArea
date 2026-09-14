@@ -16,6 +16,9 @@ public final class MessageConfig implements ConfigObject {
     @ConfigKey("afk.disabled")
     public String afkDisabled = "<green>You are no longer AFK.</green>";
 
+    @ConfigKey("tab.afk-format")
+    public String afkTabFormat = "<player> <gray>[<yellow>AFK</yellow>]</gray>";
+
     @ConfigKey("errors.no-permission")
     public String noPermission = "<red>You do not have permission to do that.</red>";
 

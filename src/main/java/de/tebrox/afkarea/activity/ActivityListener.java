@@ -1,6 +1,7 @@
 package de.tebrox.afkarea.activity;
 
 import de.tebrox.afkarea.config.MessageConfig;
+import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
@@ -23,19 +24,22 @@ public final class ActivityListener implements Listener {
     private final PlayerStateService stateService;
     private final Supplier<MessageConfig> messages;
     private final MessageService messageService;
+    private final TabListService tabListService;
 
     public ActivityListener(
             JavaPlugin plugin,
             ActivityService activityService,
             PlayerStateService stateService,
             Supplier<MessageConfig> messages,
-            MessageService messageService
+            MessageService messageService,
+            TabListService tabListService
     ) {
         this.plugin = plugin;
         this.activityService = activityService;
         this.stateService = stateService;
         this.messages = messages;
         this.messageService = messageService;
+        this.tabListService = tabListService;
     }
 
     private void record(Player player) {
@@ -62,6 +66,8 @@ public final class ActivityListener implements Listener {
         if(player == null) return;
 
         stateService.setState(playerId, PlayerState.ACTIVE);
+        tabListService.clearAfk(player);
+
         messageService.send(player, messages.get().afkDisabled);
     }
 
@@ -76,6 +82,7 @@ public final class ActivityListener implements Listener {
 
         activityService.clear(playerId);
         stateService.clear(playerId);
+        tabListService.forget(playerId);
     }
 
     @EventHandler
