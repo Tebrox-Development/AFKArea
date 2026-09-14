@@ -1,5 +1,6 @@
 package de.tebrox.afkarea.area;
 
+import de.tebrox.afkarea.region.data.CuboidRegionData;
 import de.tebrox.vertexCore.database.DataObject;
 
 public final class AreaData implements DataObject {
@@ -7,6 +8,9 @@ public final class AreaData implements DataObject {
     private String name;
     private boolean enabled = true;
     private int priority = 0;
+
+    private String regionType;
+    private CuboidRegionData cuboidRegion;
 
     public AreaData() {}
 
@@ -47,5 +51,21 @@ public final class AreaData implements DataObject {
 
     public void setPriority(int priority) {
         this.priority = priority;
+    }
+
+    public String getRegionType() {
+        return regionType;
+    }
+
+    public void setRegionType(String regionType) {
+        this.regionType = regionType;
+    }
+
+    public CuboidRegionData getCuboidRegion() {
+        return cuboidRegion;
+    }
+
+    public void setCuboidRegion(CuboidRegionData cuboidRegion) {
+        this.cuboidRegion = cuboidRegion;
     }
 }

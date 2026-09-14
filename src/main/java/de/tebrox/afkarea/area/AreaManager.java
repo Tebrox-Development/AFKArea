@@ -85,7 +85,7 @@ public final class AreaManager {
 
         String id = area.getUniqueId();
         if(id == null || id.isBlank()) {
-            onError.accept(new IllegalArgumentException("Area unique ID musst not be blank"));
+            onError.accept(new IllegalArgumentException("Area unique ID must not be blank"));
             return;
         }
 
