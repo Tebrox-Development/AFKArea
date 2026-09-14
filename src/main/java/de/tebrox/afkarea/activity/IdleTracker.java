@@ -6,6 +6,7 @@ import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -57,19 +58,26 @@ public final class IdleTracker {
     }
 
     private void tick() {
-        Duration afkTimout = Duration.ofSeconds(config.get().markAfterSeconds);
+        Duration afkTimeout = Duration.ofSeconds(config.get().markAfterSeconds);
 
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             UUID playerId = player.getUniqueId();
 
-            if(player.hasPermission("afkarea.bypass.auto-afk")) continue;
+            if(isAutoAfkSuspended(player)) continue;
             if(stateService.getState(playerId) != PlayerState.ACTIVE) continue;
-            if(activityService.getIdleDuration(playerId).compareTo(afkTimout) < 0) continue;
+            if(activityService.getIdleDuration(playerId).compareTo(afkTimeout) < 0) continue;
 
             stateService.setState(playerId, PlayerState.AFK);
             tabListService.applyAfk(player);
 
             messageService.send(player, messages.get().afkEnabled);
         }
+    }
+
+    private boolean isAutoAfkSuspended(Player player) {
+        return player.hasPermission("afkarea.bypass.auto-afk")
+                || player.getGameMode() == GameMode.SPECTATOR
+                || player.isDead()
+                || player.isSleeping();
     }
 }

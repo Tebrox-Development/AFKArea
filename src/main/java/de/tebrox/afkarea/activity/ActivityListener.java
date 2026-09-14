@@ -7,6 +7,7 @@ import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import io.papermc.paper.event.player.AsyncChatEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -150,6 +151,23 @@ public final class ActivityListener implements Listener {
 
     @EventHandler
     public void onDropItem(PlayerDropItemEvent event) {
+        record(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onGameModeChange(PlayerGameModeChangeEvent event) {
+        if(event.getPlayer().getGameMode() == GameMode.SPECTATOR && event.getNewGameMode() != GameMode.SPECTATOR) {
+            record(event.getPlayer());
+        }
+    }
+
+    @EventHandler
+    public void onRespawn(PlayerRespawnEvent event) {
+        record(event.getPlayer());
+    }
+
+    @EventHandler
+    public void onBedLeave(PlayerBedLeaveEvent event) {
         record(event.getPlayer());
     }
 }
