@@ -62,4 +62,5 @@ public class AFKAreaDatabaseSettings implements DatabaseSettings {
     @Override
     public String tablePrefix() {
         return tablePrefix;
+    }
 }

@@ -21,7 +21,7 @@ public final class AreaData implements DataObject {
     }
 
     @Override
-    public void setUniqueId(String s) {
+    public void setUniqueId(String uniqueId) {
         this.uniqueId = uniqueId;
     }
 
