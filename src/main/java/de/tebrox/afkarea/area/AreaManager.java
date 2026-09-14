@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 
 public final class AreaManager {
     private final JavaPlugin plugin;
@@ -70,5 +71,44 @@ public final class AreaManager {
     public void clear() {
         areas.clear();
         loaded = false;
+    }
+
+    public boolean isLoaded() {
+        return loaded;
+    }
+
+    public void saveArea(AreaData area, Runnable onSuccess, Consumer<Throwable> onError) {
+        if(!loaded) {
+            onError.accept(new IllegalStateException("Area data is still loading"));
+            return;
+        }
+
+        String id = area.getUniqueId();
+        if(id == null || id.isBlank()) {
+            onError.accept(new IllegalArgumentException("Area unique ID musst not be blank"));
+            return;
+        }
+
+        database.saveObjectAsyncMain(area, () -> {
+            areas.put(id, area);
+            onSuccess.run();
+        }, onError);
+    }
+
+    public void deleteArea(String id, Runnable onSuccess, Consumer<Throwable> onError) {
+        if(!loaded) {
+            onError.accept(new IllegalStateException("Area is still loading"));
+            return;
+        }
+
+        database.supplyAsyncMain(database.deleteObjectAsync(id), (ignored, error) -> {
+            if(error != null) {
+                onError.accept(error);
+                return;
+            }
+
+            areas.remove(id);
+            onSuccess.run();
+        });
     }
 }
