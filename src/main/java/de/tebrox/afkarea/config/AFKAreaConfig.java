@@ -33,4 +33,28 @@ public final class AFKAreaConfig implements ConfigObject {
 
     @ConfigKey("anti-abuse.max-rewarding-players-per-ip")
     public int maxRewardingPlayersPerIp = 2;
+
+    @ConfigKey("database.backend")
+    public String databaseBackend = "json";
+
+    @ConfigKey("database.use-queue")
+    public boolean databaseUseQueue = true;
+
+    @ConfigKey("database.timeout-millis")
+    public long databaseTimeoutMillis = 5000;
+
+    @ConfigKey("database.pool-size")
+    public int databasePoolSize = 5;
+
+    @ConfigKey("database.table-prefix")
+    public String databaseTablePrefix = "afkarea_";
+
+    @ConfigKey("database.mysql.url")
+    public String databaseMysqlUrl = "";
+
+    @ConfigKey("database.mysql.user")
+    public String databaseMysqlUser = "";
+
+    @ConfigKey("database.mysql.password")
+    public String databaseMysqlPassword = "";
 }

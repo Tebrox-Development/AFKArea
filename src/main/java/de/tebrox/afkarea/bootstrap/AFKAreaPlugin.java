@@ -3,18 +3,23 @@ package de.tebrox.afkarea.bootstrap;
 import de.tebrox.afkarea.activity.ActivityListener;
 import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.activity.IdleTracker;
+import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
+import de.tebrox.afkarea.persistence.AFKAreaDatabaseSettings;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import de.tebrox.vertexCore.VertexCoreApi;
 import de.tebrox.vertexCore.config.Config;
+import de.tebrox.vertexCore.database.Database;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import javax.xml.crypto.Data;
 
 public final class AFKAreaPlugin extends JavaPlugin {
     private static final int BSTATS_PLUGIN_ID = 34037;
@@ -33,10 +38,15 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     private TabListService tabListService;
 
+    private Database<AreaData> areaDatabase;
+
     @Override
     public void onEnable() {
         configFile = new Config<>(this, AFKAreaConfig.class);
         config = configFile.loadConfigObject();
+
+        AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
+        areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
 
         messageFile = new Config<>(this, MessageConfig.class);
         messages = messageFile.loadConfigObject();
@@ -74,6 +84,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
         playerStateService.clearAll();
         activityService.clearAll();
 
+        if(areaDatabase != null) areaDatabase.close();
+
         getLogger().info("AFKArea has been disabled");
     }
 
@@ -104,5 +116,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     public TabListService tabListService() {
         return tabListService;
+    }
+
+    public Database<AreaData> areaDatabase() {
+        return areaDatabase;
     }
 }
