@@ -6,7 +6,6 @@ import de.tebrox.vertexCore.database.Database;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.swing.plaf.synth.Region;
 import java.util.*;
 import java.util.function.Consumer;
 

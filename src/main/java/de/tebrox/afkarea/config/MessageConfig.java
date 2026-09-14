@@ -30,4 +30,12 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reload.success")
     public String reloadSuccess = "<green>AFKArea configuration reloaded.</green>";
+
+    @ConfigKey("selection.pos1-set")
+    public String selectionPos1Set =
+            "<green>Position 1 set to <gray><world> <x> <y> <z></gray>.</green>";
+
+    @ConfigKey("selection.pos2-set")
+    public String selectionPos2Set =
+            "<green>Position 2 set to <gray><world> <x> <y> <z></gray>.</green>";
 }

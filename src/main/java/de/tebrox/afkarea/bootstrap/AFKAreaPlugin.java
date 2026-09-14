@@ -5,6 +5,7 @@ import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.activity.IdleTracker;
 import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.area.AreaManager;
+import de.tebrox.afkarea.area.selection.SelectionService;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
@@ -20,7 +21,6 @@ import de.tebrox.vertexCore.database.Database;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import javax.xml.crypto.Data;
 
 public final class AFKAreaPlugin extends JavaPlugin {
     private static final int BSTATS_PLUGIN_ID = 34037;
@@ -42,6 +42,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private Database<AreaData> areaDatabase;
     private AreaManager areaManager;
 
+    private SelectionService selectionService;
+
     @Override
     public void onEnable() {
         configFile = new Config<>(this, AFKAreaConfig.class);
@@ -61,6 +63,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
         activityService = new ActivityService();
 
         tabListService = new TabListService(() -> messages, messageService);
+
+        selectionService = new SelectionService();
 
         idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService);
         idleTracker.start();
@@ -84,6 +88,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         VertexCoreApi.get().commands().unregisterAll(this);
 
         tabListService.restoreAll(getServer().getOnlinePlayers());
+        selectionService.clearAll();
 
         playerStateService.clearAll();
         activityService.clearAll();
@@ -105,31 +110,12 @@ public final class AFKAreaPlugin extends JavaPlugin {
                 .forEach(tabListService::refreshAfk);
     }
 
-    public MessageConfig messages() {
-        return messages;
-    }
-
-    public MessageService messageService() {
-        return messageService;
-    }
-
-    public PlayerStateService playerStateService() {
-        return playerStateService;
-    }
-
-    public ActivityService activityService() {
-        return activityService;
-    }
-
-    public TabListService tabListService() {
-        return tabListService;
-    }
-
-    public Database<AreaData> areaDatabase() {
-        return areaDatabase;
-    }
-
-    public AreaManager areaManager() {
-        return areaManager;
-    }
+    public MessageConfig messages() { return messages; }
+    public MessageService messageService() { return messageService; }
+    public PlayerStateService playerStateService() { return playerStateService; }
+    public ActivityService activityService() { return activityService; }
+    public TabListService tabListService() { return tabListService; }
+    public Database<AreaData> areaDatabase() { return areaDatabase;  }
+    public AreaManager areaManager() { return areaManager;  }
+    public SelectionService selectionService() { return selectionService; }
 }
