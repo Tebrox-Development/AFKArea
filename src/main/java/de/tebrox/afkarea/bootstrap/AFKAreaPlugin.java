@@ -4,6 +4,7 @@ import de.tebrox.afkarea.activity.ActivityListener;
 import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.activity.IdleTracker;
 import de.tebrox.afkarea.area.AreaData;
+import de.tebrox.afkarea.area.AreaManager;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
@@ -39,6 +40,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private TabListService tabListService;
 
     private Database<AreaData> areaDatabase;
+    private AreaManager areaManager;
 
     @Override
     public void onEnable() {
@@ -47,6 +49,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
+        areaManager = new AreaManager(this, areaDatabase);
 
         messageFile = new Config<>(this, MessageConfig.class);
         messages = messageFile.loadConfigObject();
@@ -84,6 +87,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         playerStateService.clearAll();
         activityService.clearAll();
 
+        if(areaManager != null) areaManager.clear();
         if(areaDatabase != null) areaDatabase.close();
 
         getLogger().info("AFKArea has been disabled");
@@ -92,6 +96,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public void reloadConfigs() {
         config = configFile.loadConfigObject();
         messages = messageFile.loadConfigObject();
+
+        areaManager.loadAsync();
 
         getServer().getOnlinePlayers().stream()
                 .filter(player -> playerStateService.getState(player.getUniqueId()) == PlayerState.AFK)
@@ -120,5 +126,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     public Database<AreaData> areaDatabase() {
         return areaDatabase;
+    }
+
+    public AreaManager areaManager() {
+        return areaManager;
     }
 }
