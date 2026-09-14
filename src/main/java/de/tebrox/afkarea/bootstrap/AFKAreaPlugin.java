@@ -45,7 +45,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService);
         idleTracker.start();
 
-        getServer().getPluginManager().registerEvents(new ActivityListener(activityService, playerStateService), this);
+        getServer().getPluginManager().registerEvents(new ActivityListener(this, activityService, playerStateService, () -> messages, messageService), this);
 
         getServer().getOnlinePlayers().forEach(player -> activityService.track(player.getUniqueId())
         );

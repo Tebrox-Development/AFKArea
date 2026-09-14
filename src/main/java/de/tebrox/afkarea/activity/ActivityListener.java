@@ -1,27 +1,68 @@
 package de.tebrox.afkarea.activity;
 
+import de.tebrox.afkarea.config.MessageConfig;
+import de.tebrox.afkarea.message.MessageService;
+import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import io.papermc.paper.event.player.AsyncChatEvent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.player.*;
+import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.UUID;
+import java.util.function.Supplier;
 
 public final class ActivityListener implements Listener {
+    private final JavaPlugin plugin;
     private final ActivityService activityService;
     private final PlayerStateService stateService;
+    private final Supplier<MessageConfig> messages;
+    private final MessageService messageService;
 
-    public ActivityListener(ActivityService activityService, PlayerStateService stateService) {
+    public ActivityListener(
+            JavaPlugin plugin,
+            ActivityService activityService,
+            PlayerStateService stateService,
+            Supplier<MessageConfig> messages,
+            MessageService messageService
+    ) {
+        this.plugin = plugin;
         this.activityService = activityService;
         this.stateService = stateService;
+        this.messages = messages;
+        this.messageService = messageService;
     }
 
     private void record(Player player) {
-        activityService.recordActivity(player.getUniqueId());
+        record(player, true);
+    }
+
+    private void record(Player player, boolean resetAfk) {
+        UUID playerId = player.getUniqueId();
+        activityService.recordActivity(playerId);
+
+        if(!resetAfk) return;
+
+        if(Bukkit.isPrimaryThread()) {
+            resetAfk(playerId);
+        }else{
+            plugin.getServer().getScheduler().runTask(plugin, () -> resetAfk(playerId));
+        }
+    }
+
+    private void resetAfk(UUID playerId) {
+        if(stateService.getState(playerId) != PlayerState.AFK) return;
+
+        Player player = plugin.getServer().getPlayer(playerId);
+        if(player == null) return;
+
+        stateService.setState(playerId, PlayerState.ACTIVE);
+        messageService.send(player, messages.get().afkDisabled);
     }
 
     @EventHandler
@@ -58,7 +99,12 @@ public final class ActivityListener implements Listener {
 
     @EventHandler
     public void onCommand(PlayerCommandPreprocessEvent event) {
-        record(event.getPlayer());
+        String message = event.getMessage();
+        String command = message.substring(1).split("\\s+", 2)[0];
+
+        boolean resetAfk = !command.equalsIgnoreCase("afk");
+
+        record(event.getPlayer(), resetAfk);
     }
 
     @EventHandler
