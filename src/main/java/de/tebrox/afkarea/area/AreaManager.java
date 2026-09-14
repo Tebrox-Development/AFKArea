@@ -1,12 +1,13 @@
 package de.tebrox.afkarea.area;
 
+import de.tebrox.afkarea.region.CuboidRegionProvider;
+import de.tebrox.afkarea.region.RegionProvider;
 import de.tebrox.vertexCore.database.Database;
+import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import javax.swing.plaf.synth.Region;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class AreaManager {
@@ -14,6 +15,8 @@ public final class AreaManager {
     private final Database<AreaData> database;
 
     private final Map<String, AreaData> areas = new HashMap<>();
+    private final List<RuntimeArea> runtimeAreas = new ArrayList<>();
+
     private boolean loaded;
 
     public AreaManager(JavaPlugin plugin, Database<AreaData> database) {
@@ -47,6 +50,7 @@ public final class AreaManager {
             areas.put(id, area);
         }
 
+        rebuildRuntimeAreas();
         loaded = true;
 
         if(areas.size() > 1 || areas.isEmpty()) {
@@ -70,6 +74,7 @@ public final class AreaManager {
 
     public void clear() {
         areas.clear();
+        runtimeAreas.clear();
         loaded = false;
     }
 
@@ -91,6 +96,8 @@ public final class AreaManager {
 
         database.saveObjectAsyncMain(area, () -> {
             areas.put(id, area);
+            rebuildRuntimeAreas();
+
             onSuccess.run();
         }, onError);
     }
@@ -108,7 +115,58 @@ public final class AreaManager {
             }
 
             areas.remove(id);
+            rebuildRuntimeAreas();
+
             onSuccess.run();
         });
+    }
+
+    private record RuntimeArea(AreaData area, RegionProvider region) {}
+
+    private void rebuildRuntimeAreas() {
+        runtimeAreas.clear();
+
+        for(AreaData area : areas.values()) {
+            if(!area.isEnabled()) continue;
+
+            RegionProvider provider = createRegionProvider(area);
+
+            if(provider == null) continue;
+
+            runtimeAreas.add(new RuntimeArea(area, provider));
+        }
+
+        runtimeAreas.sort(Comparator.comparingInt((RuntimeArea runtime) -> runtime.area().getPriority()).reversed().thenComparing(runtime -> runtime.area().getUniqueId()));
+    }
+
+    private RegionProvider createRegionProvider(AreaData area) {
+        String regionType = area.getRegionType();
+
+        if(regionType == null || regionType.isBlank()) {
+            plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' has no region type");
+            return null;
+        }
+
+        if(regionType.equalsIgnoreCase("cuboid")) {
+            if(area.getCuboidRegion() == null) {
+                plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' uses cuboid region type but has no cuboid data");
+                return null;
+            }
+
+            return new CuboidRegionProvider(area.getCuboidRegion());
+        }
+
+        plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' uses unsupported region type '" + regionType + "'");
+        return null;
+    }
+
+    public Optional<AreaData> findArea(Location location) {
+        if(!loaded || location == null) return Optional.empty();
+
+        for(RuntimeArea runtime : runtimeAreas) {
+            if(runtime.region().contains(location)) return Optional.of(runtime.area());
+        }
+
+        return Optional.empty();
     }
 }

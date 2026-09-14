@@ -18,6 +18,8 @@ public class CuboidRegionProvider implements RegionProvider {
 
         World world = location.getWorld();
 
+        if(world == null) return false;
+
         if(data.getWorld() == null || !data.getWorld().equals(world.getName())) return false;
 
         int x = location.getBlockX();
