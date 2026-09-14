@@ -2,6 +2,7 @@ package de.tebrox.afkarea.bootstrap;
 
 import de.tebrox.afkarea.activity.ActivityListener;
 import de.tebrox.afkarea.activity.ActivityService;
+import de.tebrox.afkarea.activity.IdleTracker;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
@@ -26,6 +27,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     private PlayerStateService playerStateService;
     private ActivityService activityService;
+    private IdleTracker idleTracker;
 
     @Override
     public void onEnable() {
@@ -39,6 +41,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         playerStateService = new PlayerStateService();
         activityService = new ActivityService();
+
+        idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService);
+        idleTracker.start();
 
         getServer().getPluginManager().registerEvents(new ActivityListener(activityService, playerStateService), this);
 
@@ -54,7 +59,10 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        idleTracker.stop();
+
         VertexCoreApi.get().commands().unregisterAll(this);
+
         playerStateService.clearAll();
         activityService.clearAll();
 
