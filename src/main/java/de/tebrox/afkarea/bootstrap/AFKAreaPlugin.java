@@ -1,5 +1,6 @@
 package de.tebrox.afkarea.bootstrap;
 
+import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
@@ -23,6 +24,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private MessageService messageService;
 
     private PlayerStateService playerStateService;
+    private ActivityService activityService;
 
     @Override
     public void onEnable() {
@@ -35,6 +37,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         messageService = new MessageService(() -> messages);
 
         playerStateService = new PlayerStateService();
+        activityService = new ActivityService();
 
         VertexCoreApi.get().commands().register(this, new AFKAreaCommands(this));
         VertexCoreApi.get().commands().register(this, new AfkCommand(this));
@@ -47,6 +50,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public void onDisable() {
         VertexCoreApi.get().commands().unregisterAll(this);
         playerStateService.clearAll();
+        activityService.clearAll();
 
         getLogger().info("AFKArea has been disabled");
     }
@@ -66,5 +70,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     public PlayerStateService playerStateService() {
         return playerStateService;
+    }
+
+    public ActivityService activityService() {
+        return activityService;
     }
 }
