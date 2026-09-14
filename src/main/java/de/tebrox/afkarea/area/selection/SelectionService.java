@@ -12,7 +12,7 @@ public final class SelectionService {
     }
 
     public void setPos2(UUID playerId, SelectionPoint point) {
-        selections.compute(playerId, (k, current) -> new CuboidSelection(point, current == null ? null : current.pos1()));
+        selections.compute(playerId, (k, current) -> new CuboidSelection(current == null ? null : current.pos1(), point));
     }
 
     public CuboidSelection getSelection(UUID playerId) {

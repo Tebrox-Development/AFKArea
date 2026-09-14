@@ -1,9 +1,7 @@
 package de.tebrox.afkarea.command;
 
 import de.tebrox.afkarea.area.selection.SelectionPoint;
-import de.tebrox.afkarea.area.selection.SelectionService;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
-import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
