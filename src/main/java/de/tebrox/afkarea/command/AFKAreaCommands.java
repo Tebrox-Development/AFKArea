@@ -16,6 +16,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
@@ -408,6 +409,115 @@ public final class AFKAreaCommands {
         plugin.messageService().send(player, plugin.messages().areaTeleported, Placeholder.unparsed("area", id));
     }
 
+    @VSub("afkarea list")
+    @VDesc("List all AFK areas")
+    @VPerm("afkarea.admin.list")
+    public void list(CommandContext ctx) {
+        List<AreaData> areas = plugin.areaManager().getAreas().stream().sorted(Comparator.comparing(AreaData::getUniqueId, String.CASE_INSENSITIVE_ORDER)).toList();
+
+        if(areas.isEmpty()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaListEmpty);
+            return;
+        }
+
+        String entries = String.join(
+                "\n",
+                areas.stream().map(area ->
+                        "- "
+                        + area.getUniqueId()
+                        + " - "
+                        + area.getName()
+                        + " ["
+                        + (area.isEnabled() ? "enabled" : "disabled")
+                        + "] "
+        ).toList());
+
+        plugin.messageService().send(ctx.sender(), plugin.messages().areaList, Placeholder.unparsed("count", Integer.toString(areas.size())), Placeholder.unparsed("areas", entries));
+    }
+
+    @VSub("afkarea info")
+    @VDesc("Show information about an AFK area")
+    @VPerm("afkarea.admin.info")
+    public void info(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 1) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaInfoUsage);
+            return;
+        }
+
+        String id = args[0];
+
+        AreaData area = plugin.areaManager().getArea(id);
+
+        if (area == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        plugin.messageService().send(
+                ctx.sender(),
+                plugin.messages().areaInfo,
+                Placeholder.unparsed(
+                        "area",
+                        area.getUniqueId()
+                ),
+                Placeholder.unparsed(
+                        "name",
+                        area.getName()
+                ),
+                Placeholder.unparsed(
+                        "enabled",
+                        Boolean.toString(area.isEnabled())
+                ),
+                Placeholder.unparsed(
+                        "priority",
+                        Integer.toString(area.getPriority())
+                ),
+                Placeholder.unparsed(
+                        "region",
+                        describeRegion(area)
+                ),
+                Placeholder.unparsed(
+                        "teleport",
+                        describeTeleport(area)
+                )
+        );
+    }
+
+    private String describeRegion(AreaData area) {
+        if ("cuboid".equalsIgnoreCase(area.getRegionType()) && area.getCuboidRegion() != null) {
+            CuboidRegionData region = area.getCuboidRegion();
+
+            return "cuboid "
+                    + region.getWorld()
+                    + " ["
+                    + region.getMinX() + ", "
+                    + region.getMinY() + ", "
+                    + region.getMinZ()
+                    + "] -> ["
+                    + region.getMaxX() + ", "
+                    + region.getMaxY() + ", "
+                    + region.getMaxZ()
+                    + "]";
+        }
+
+        if (area.getRegionType() == null || area.getRegionType().isBlank()) {
+            return "not configured";
+        }
+        return area.getRegionType();
+    }
+
+    private String describeTeleport(AreaData area) {
+        TeleportData teleport = area.getTeleport();
+
+        if (teleport == null) {
+            return "not set";
+        }
+
+        return String.format(Locale.ROOT, "%s %.2f, %.2f, %.2f (yaw %.1f, pitch %.1f)", teleport.getWorld(), teleport.getX(), teleport.getY(), teleport.getZ(), teleport.getYaw(), teleport.getPitch());
+    }
+
     private List<String> suggestAreaIds(CommandSender sender, String[] args, String permission) {
         if(!sender.hasPermission(permission)) {
             return List.of();
@@ -461,5 +571,10 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea tp")
     public List<String> tpSuggest(CommandSender sender, String alias, String[] args) {
         return suggestAreaIds(sender, args, "afkarea.admin.tp");
+    }
+
+    @VSuggest("afkarea info")
+    public List<String> infoSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestAreaIds(sender, args, "afkarea.admin.info");
     }
 }

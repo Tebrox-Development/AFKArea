@@ -105,4 +105,21 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.teleported")
     public String areaTeleported = "<green>Teleported to AFK area '<area>'.</green>";
+
+    @ConfigKey("area.list-empty")
+    public String areaListEmpty = "<yellow>No AFK areas are configured.</yellow>";
+
+    @ConfigKey("area.list")
+    public String areaList = "<gold>AFK areas (<count>):</gold>\n<gray><areas></gray>";
+
+    @ConfigKey("area.info-usage")
+    public String areaInfoUsage = "<red>Usage: /afkarea info <id></red>";
+
+    @ConfigKey("area.info")
+    public String areaInfo = "<gold>AFK area '<area>'</gold>\n"
+                    + "<gray>Name: <white><name></white>\n"
+                    + "Enabled: <white><enabled></white>\n"
+                    + "Priority: <white><priority></white>\n"
+                    + "Region: <white><region></white>\n"
+                    + "Teleport: <white><teleport></white></gray>";
 }
