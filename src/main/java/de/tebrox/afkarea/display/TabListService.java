@@ -5,7 +5,6 @@ import de.tebrox.afkarea.message.MessageService;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
-import org.yaml.snakeyaml.error.Mark;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -54,9 +53,12 @@ public final class TabListService {
     }
 
     private void clearMarker(Player player, MarkerType type) {
-        MarkerState state = markers.remove(player.getUniqueId());
+        UUID playerId = player.getUniqueId();
+        MarkerState state = markers.get(playerId);
 
         if(state == null || state.type != type) return;
+
+        markers.remove(playerId);
 
         if(player.playerListName().equals(state.applied())) {
             player.playerListName(state.original());

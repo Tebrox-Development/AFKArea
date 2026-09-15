@@ -131,4 +131,7 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("tab.afk-area-format")
     public String afkAreaTabFormat = "<player> <gray>[<aqua>AFK-ZONE</aqua>]</gray>";
+
+    @ConfigKey("area.unavailable")
+    public String areaUnavailable = "<red>The configured AFK area is currently unavailable.</red>";
 }

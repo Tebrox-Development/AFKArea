@@ -3,10 +3,7 @@ package de.tebrox.afkarea.bootstrap;
 import de.tebrox.afkarea.activity.ActivityListener;
 import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.activity.IdleTracker;
-import de.tebrox.afkarea.area.AreaData;
-import de.tebrox.afkarea.area.AreaManager;
-import de.tebrox.afkarea.area.AreaSessionListener;
-import de.tebrox.afkarea.area.AreaSessionService;
+import de.tebrox.afkarea.area.*;
 import de.tebrox.afkarea.area.selection.SelectionService;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
@@ -50,6 +47,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     private AreaSessionService areaSessionService;
     private AreaVisibilityService visibilityService;
+    private AreaTeleportService areaTeleportService;
 
     @Override
     public void onEnable() {
@@ -59,6 +57,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
         areaManager = new AreaManager(this, areaDatabase);
+        areaTeleportService = new AreaTeleportService(areaManager);
 
         messageFile = new Config<>(this, MessageConfig.class);
         messages = messageFile.loadConfigObject();
@@ -128,6 +127,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
                 .forEach(tabListService::refreshAfk);
     }
 
+    public AFKAreaConfig config() { return config; }
     public MessageConfig messages() { return messages; }
     public MessageService messageService() { return messageService; }
     public PlayerStateService playerStateService() { return playerStateService; }
@@ -137,4 +137,5 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public AreaManager areaManager() { return areaManager;  }
     public SelectionService selectionService() { return selectionService; }
     public AreaSessionService areaSessionService() { return areaSessionService; }
+    public AreaTeleportService areaTeleportService() { return areaTeleportService; }
 }

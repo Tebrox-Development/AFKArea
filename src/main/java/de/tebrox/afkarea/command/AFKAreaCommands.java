@@ -1,6 +1,7 @@
 package de.tebrox.afkarea.command;
 
 import de.tebrox.afkarea.area.AreaData;
+import de.tebrox.afkarea.area.AreaTeleportService;
 import de.tebrox.afkarea.area.TeleportData;
 import de.tebrox.afkarea.area.selection.CuboidSelection;
 import de.tebrox.afkarea.area.selection.SelectionPoint;
@@ -28,9 +29,24 @@ public final class AFKAreaCommands {
     }
 
     @VCommand("afkarea")
-    @VDesc("AFKArea commands")
+    @VDesc("Teleport to the default AFK area")
+    @VPlayerOnly
+    @VPerm(value = "afkarea.command.teleport")
     public void root(CommandContext ctx) {
-        ctx.reply("/afkarea reload");
+        Player player = (Player) ctx.sender();
+
+        String areaId = plugin.config().autoTeleportTargetArea;
+
+        if(areaId == null || areaId.isBlank()) {
+            plugin.messageService().send(player, plugin.messages().areaUnavailable);
+            return;
+        }
+
+        AreaTeleportService.Result result = plugin.areaTeleportService().teleport(player, areaId, true);
+
+        if(result == AreaTeleportService.Result.SUCCESS) return;
+
+        plugin.messageService().send(player, plugin.messages().areaUnavailable);
     }
 
     @VSub("afkarea reload")
@@ -385,28 +401,18 @@ public final class AFKAreaCommands {
             return;
         }
 
-        TeleportData teleport = area.getTeleport();
+        AreaTeleportService.Result result = plugin.areaTeleportService().teleport(player, id, false);
 
-        if (teleport == null) {
-            plugin.messageService().send(player, plugin.messages().areaTeleportNotSet, Placeholder.unparsed("area", id));
-            return;
+        switch (result) {
+            case SUCCESS -> plugin.messageService().send(player, plugin.messages().areaTeleported, Placeholder.unparsed("area", id));
+            case TELEPORT_NOT_SET -> plugin.messageService().send(player, plugin.messages().areaTeleportNotSet, Placeholder.unparsed("area", id));
+            case WORLD_UNAVAILABLE -> {
+                TeleportData teleport = area.getTeleport();
+                plugin.messageService().send(player, plugin.messages().areaTeleportWorldUnavailable, Placeholder.unparsed("area", id), Placeholder.unparsed("world", teleport == null ? "unknown" : teleport.getWorld()));
+            }
+            case TELEPORT_FAILED -> plugin.getLogger().warning("Failed to teleport player '" + player.getName() + "' to AFK area '" + id + "'");
+            case AREA_NOT_FOUND, AREA_DISABLED -> {}
         }
-
-        World world = Bukkit.getWorld(teleport.getWorld());
-
-        if (world == null) {
-            plugin.messageService().send(player, plugin.messages().areaTeleportWorldUnavailable, Placeholder.unparsed("area", id), Placeholder.unparsed("world", teleport.getWorld()));
-            return;
-        }
-
-        Location target = new Location(world, teleport.getX(), teleport.getY(), teleport.getZ(), teleport.getYaw(), teleport.getPitch());
-
-        if (!player.teleport(target)) {
-            plugin.getLogger().warning("Failed to teleport player '" + player.getName() + "' to AFK area '" + id + "'");
-            return;
-        }
-
-        plugin.messageService().send(player, plugin.messages().areaTeleported, Placeholder.unparsed("area", id));
     }
 
     @VSub("afkarea list")
