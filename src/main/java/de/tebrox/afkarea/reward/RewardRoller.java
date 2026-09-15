@@ -1,7 +1,6 @@
 package de.tebrox.afkarea.reward;
 
 import de.tebrox.afkarea.reward.data.CommandRewardData;
-import de.tebrox.afkarea.reward.data.RewardConfigData;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,7 @@ public final class RewardRoller {
             List<CommandRewardData> source = allowDuplicates ? rewards : available;
             var reward = rewardPool.select(source, eligibility);
 
-            if(rewards.isEmpty()) break;
+            if(reward.isEmpty()) break;
 
             CommandRewardData winner = reward.get();
             selected.add(winner);
