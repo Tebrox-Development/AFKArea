@@ -89,7 +89,7 @@ public final class AFKAreaCommands {
 
         // rawArgs:
         // /afkarea create spawn-afk cuboid
-        // -> ["create", "spawn-afk", "cuboid"]
+        // -> ["spawn-afk", "cuboid"]
         if (args.length < 2) {
             plugin.messageService().send(player, plugin.messages().areaCreateUsage);
             return;
@@ -157,19 +157,78 @@ public final class AFKAreaCommands {
                         Placeholder.unparsed("area", id)
                 ),
                 error -> {
-                    plugin.getLogger().severe(
-                            "Failed to create AFK area '"
-                                    + id + "': "
-                                    + error.getMessage()
-                    );
+                    plugin.getLogger().severe("Failed to create AFK area '" + id + "': " + error.getMessage());
 
                     error.printStackTrace();
 
-                    plugin.messageService().send(
-                            player,
-                            plugin.messages().areaSaveFailed,
-                            Placeholder.unparsed("area", id)
-                    );
+                    plugin.messageService().send(player, plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
+                }
+        );
+    }
+
+    @VSub("afkarea redefine")
+    @VDesc("Redefine a cuboid AFK area")
+    @VPlayerOnly
+    @VPerm("afkarea.admin.redefine")
+    public void redefine(CommandContext ctx) {
+        Player player = (Player) ctx.sender();
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 1) {
+            plugin.messageService().send(player, plugin.messages().areaRedefineUsage);
+            return;
+        }
+
+        String id = args[0];
+
+        AreaData current = plugin.areaManager().getArea(id);
+
+        if (current == null) {
+            plugin.messageService().send(player, plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        if (!"cuboid".equalsIgnoreCase(current.getRegionType())) {
+            plugin.messageService().send(player, plugin.messages().areaNotCuboid, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        CuboidSelection selection =
+                plugin.selectionService().getSelection( player.getUniqueId());
+
+        if (selection == null || !selection.isComplete()) {
+            plugin.messageService().send(player, plugin.messages().areaSelectionIncomplete);
+            return;
+        }
+
+        if (!selection.isSameWorld()) {
+            plugin.messageService().send(player, plugin.messages().areaSelectionWorldMismatch);
+            return;
+        }
+
+        redefineCuboidArea(player, current, selection);
+    }
+
+    private void redefineCuboidArea(Player player, AreaData current, CuboidSelection selection) {
+        SelectionPoint pos1 = selection.pos1();
+        SelectionPoint pos2 = selection.pos2();
+
+        CuboidRegionData region = new CuboidRegionData(pos1.world(), pos1.x(), pos1.y(), pos1.z(), pos2.x(), pos2.y(), pos2.z());
+
+        AreaData updated = current.copy();
+        updated.setCuboidRegion(region);
+
+        String id = updated.getUniqueId();
+
+        plugin.areaManager().saveArea(
+                updated,
+                () -> plugin.messageService().send(player, plugin.messages().areaRedefined, Placeholder.unparsed("area", id)),
+                error -> {
+                    plugin.getLogger().severe("Failed to redefine AFK area '" + id + "': " + error.getMessage());
+
+                    error.printStackTrace();
+
+                    plugin.messageService().send(player, plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
                 }
         );
     }

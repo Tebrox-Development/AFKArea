@@ -78,4 +78,15 @@ public final class AreaData implements DataObject {
     public void setCuboidRegion(CuboidRegionData cuboidRegion) {
         this.cuboidRegion = cuboidRegion;
     }
+
+    public AreaData copy() {
+        AreaData copy = new AreaData(uniqueId, name);
+
+        copy.enabled = enabled;
+        copy.priority = priority;
+        copy.regionType = regionType;
+        copy.cuboidRegion = cuboidRegion;
+
+        return copy;
+    }
 }

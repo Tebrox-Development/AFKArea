@@ -60,4 +60,13 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.save-failed")
     public String areaSaveFailed = "<red>Failed to save AFK area '<area>'. Check the server console.</red>";
+
+    @ConfigKey("area.redefine-usage")
+    public String areaRedefineUsage = "<red>Usage: /afkarea redefine <id></red>";
+
+    @ConfigKey("area.not-cuboid")
+    public String areaNotCuboid = "<red>AFK area '<area>' is not a cuboid area.</red>";
+
+    @ConfigKey("area.redefined")
+    public String areaRedefined = "<green>AFK area '<area>' was redefined successfully.</green>";
 }
