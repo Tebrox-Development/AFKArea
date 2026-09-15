@@ -10,10 +10,13 @@ import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Location;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 public final class AFKAreaCommands {
     private final AFKAreaPlugin plugin;
@@ -356,5 +359,60 @@ public final class AFKAreaCommands {
                     plugin.messageService().send(player, plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
                 }
         );
+    }
+
+    private List<String> suggestAreaIds(CommandSender sender, String[] args, String permission) {
+        if(!sender.hasPermission(permission)) {
+            return List.of();
+        }
+
+        if(args.length > 2) {
+            return List.of();
+        }
+
+        String token = args.length >= 2 ? args[1] : "";
+        String normalized = token.toLowerCase(Locale.ROOT);
+
+        return plugin.areaManager().getAreas().stream().map(AreaData::getUniqueId).filter(id -> id != null && !id.isBlank()).filter(id -> id.toLowerCase(Locale.ROOT).startsWith(normalized)).sorted(String.CASE_INSENSITIVE_ORDER).toList();
+    }
+
+    @VSuggest("afkarea redefine")
+    public List<String> redefineSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestAreaIds(sender, args, "afkarea.admin.redefine");
+    }
+
+    @VSuggest("afkarea rename")
+    public List<String> renameSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestAreaIds(sender, args, "afkarea.admin.rename");
+    }
+
+    @VSuggest("afkarea delete")
+    public List<String> deleteSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestAreaIds(sender, args, "afkarea.admin.delete");
+    }
+
+    @VSuggest("afkarea setteleport")
+    public List<String> setTeleportSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestAreaIds(sender, args, "afkarea.admin.setteleport");
+    }
+
+    @VSuggest("afkarea create")
+    public List<String> createSuggest(CommandSender sender, String alias, String[] args) {
+        if(!sender.hasPermission("afkarea.admin.create")) {
+            return List.of();
+        }
+
+        if(args.length != 3) {
+            return List.of();
+        }
+
+        String token = args[2].toLowerCase(Locale.ROOT);
+
+        return List.of("cuboid").stream().filter(type -> type.startsWith(token)).toList();
+    }
+
+    @VSuggest("afkarea tp")
+    public List<String> tpSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestAreaIds(sender, args, "afkarea.admin.tp");
     }
 }
