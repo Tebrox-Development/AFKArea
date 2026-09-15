@@ -5,6 +5,8 @@ import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.activity.IdleTracker;
 import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.area.AreaManager;
+import de.tebrox.afkarea.area.AreaSessionListener;
+import de.tebrox.afkarea.area.AreaSessionService;
 import de.tebrox.afkarea.area.selection.SelectionService;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
@@ -44,6 +46,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     private SelectionService selectionService;
 
+    private AreaSessionService areaSessionService;
+
     @Override
     public void onEnable() {
         configFile = new Config<>(this, AFKAreaConfig.class);
@@ -52,7 +56,6 @@ public final class AFKAreaPlugin extends JavaPlugin {
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
         areaManager = new AreaManager(this, areaDatabase);
-        areaManager.loadAsync();
 
         messageFile = new Config<>(this, MessageConfig.class);
         messages = messageFile.loadConfigObject();
@@ -63,6 +66,11 @@ public final class AFKAreaPlugin extends JavaPlugin {
         activityService = new ActivityService();
 
         tabListService = new TabListService(() -> messages, messageService);
+
+        areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService);
+        areaManager.setRuntimeChangeListener(() -> getServer().getOnlinePlayers().forEach(areaSessionService::sync));
+        getServer().getPluginManager().registerEvents(new AreaSessionListener(areaSessionService), this);
+        areaManager.loadAsync();
 
         selectionService = new SelectionService();
 
@@ -96,6 +104,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
         if(areaManager != null) areaManager.clear();
         if(areaDatabase != null) areaDatabase.close();
 
+        areaSessionService.clearAll();
+
         getLogger().info("AFKArea has been disabled");
     }
 
@@ -118,4 +128,5 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public Database<AreaData> areaDatabase() { return areaDatabase;  }
     public AreaManager areaManager() { return areaManager;  }
     public SelectionService selectionService() { return selectionService; }
+    public AreaSessionService areaSessionService() { return areaSessionService; }
 }

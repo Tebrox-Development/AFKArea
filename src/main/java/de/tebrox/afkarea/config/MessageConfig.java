@@ -122,4 +122,10 @@ public final class MessageConfig implements ConfigObject {
                     + "Priority: <white><priority></white>\n"
                     + "Region: <white><region></white>\n"
                     + "Teleport: <white><teleport></white></gray>";
+
+    @ConfigKey("area.entered")
+    public String areaEntered = "<yellow>You entered AFK area '<area>'.</yellow>";
+
+    @ConfigKey("area.left")
+    public String areaLeft = "<green>You left AFK area '<area>'.</green>";
 }

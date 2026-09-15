@@ -17,6 +17,7 @@ public final class AreaManager {
     private final List<RuntimeArea> runtimeAreas = new ArrayList<>();
 
     private boolean loaded;
+    private Runnable runtimeChangeListener;
 
     public AreaManager(JavaPlugin plugin, Database<AreaData> database) {
         this.plugin = plugin;
@@ -33,6 +34,7 @@ public final class AreaManager {
                     plugin.getLogger().severe("Failed to load AFK areas: " + error.getMessage());
                     error.printStackTrace();
                 });
+        runtimeChangeListener.run();
     }
 
     private void replaceCache(Collection<AreaData>loadedAreas) {
@@ -51,6 +53,7 @@ public final class AreaManager {
 
         rebuildRuntimeAreas();
         loaded = true;
+        runtimeChangeListener.run();
 
         if(areas.size() > 1 || areas.isEmpty()) {
             plugin.getLogger().info("Loaded " + areas.size() + " AFK areas");
@@ -98,6 +101,7 @@ public final class AreaManager {
             rebuildRuntimeAreas();
 
             onSuccess.run();
+            runtimeChangeListener.run();
         }, onError);
     }
 
@@ -117,6 +121,7 @@ public final class AreaManager {
             rebuildRuntimeAreas();
 
             onSuccess.run();
+            runtimeChangeListener.run();
         });
     }
 
@@ -136,6 +141,10 @@ public final class AreaManager {
         }
 
         runtimeAreas.sort(Comparator.comparingInt((RuntimeArea runtime) -> runtime.area().getPriority()).reversed().thenComparing(runtime -> runtime.area().getUniqueId()));
+    }
+
+    public void setRuntimeChangeListener(Runnable runtimeChangeListener) {
+        this.runtimeChangeListener = runtimeChangeListener == null ? () -> {} : runtimeChangeListener;
     }
 
     private RegionProvider createRegionProvider(AreaData area) {
