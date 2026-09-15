@@ -1,5 +1,6 @@
 package de.tebrox.afkarea.activity;
 
+import de.tebrox.afkarea.area.AreaTeleportService;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.display.TabListService;
@@ -12,6 +13,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 import java.util.function.Supplier;
 
@@ -23,6 +26,9 @@ public final class IdleTracker {
     private final Supplier<MessageConfig> messages;
     private final MessageService messageService;
     private final TabListService tabListService;
+    private final AreaTeleportService areaTeleportService;
+
+    private final Set<UUID> autoTeleportAttempts = new HashSet<>();
 
     private BukkitTask task;
 
@@ -33,7 +39,7 @@ public final class IdleTracker {
             Supplier<AFKAreaConfig> config,
             Supplier<MessageConfig> messages,
             MessageService messageService,
-            TabListService tabListService
+            TabListService tabListService, AreaTeleportService areaTeleportService
     ) {
         this.plugin = plugin;
         this.activityService = activityService;
@@ -42,6 +48,7 @@ public final class IdleTracker {
         this.messages = messages;
         this.messageService = messageService;
         this.tabListService = tabListService;
+        this.areaTeleportService = areaTeleportService;
     }
 
     public void start() {
@@ -58,26 +65,76 @@ public final class IdleTracker {
     }
 
     private void tick() {
-        Duration afkTimeout = Duration.ofSeconds(config.get().markAfterSeconds);
+        AFKAreaConfig current = config.get();
+        Duration afkTimeout = Duration.ofSeconds(current.markAfterSeconds);
+        Duration teleportTimeout = Duration.ofSeconds(current.teleportAfterSeconds);
 
         for(Player player : plugin.getServer().getOnlinePlayers()) {
             UUID playerId = player.getUniqueId();
+            PlayerState state = stateService.getState(playerId);
 
-            if(isAutoAfkSuspended(player)) continue;
-            if(stateService.getState(playerId) != PlayerState.ACTIVE) continue;
-            if(activityService.getIdleDuration(playerId).compareTo(afkTimeout) < 0) continue;
+            if(state == PlayerState.AFK_AREA) {
+                autoTeleportAttempts.remove(playerId);
+                continue;
+            }
 
-            stateService.setState(playerId, PlayerState.AFK);
+            if(isAutomationSuspended(player)) {
+                activityService.recordActivity(playerId);
+                autoTeleportAttempts.remove(playerId);
+                continue;
+            }
+
+            Duration idle = activityService.getIdleDuration(playerId);
+
+            if(idle.compareTo(teleportTimeout) < 0) {
+                autoTeleportAttempts.remove(playerId);
+            }
+
+            if(state == PlayerState.ACTIVE && idle.compareTo(afkTimeout) >= 0) {
+                stateService.setState(playerId, PlayerState.AFK);
+            }
             tabListService.applyAfk(player);
-
             messageService.send(player, messages.get().afkEnabled);
+            state = PlayerState.AFK;
+
+            if(!current.autoTeleportEnabled) {
+                autoTeleportAttempts.remove(playerId);
+                continue;
+            }
+
+            if(state != PlayerState.AFK) continue;
+            if(idle.compareTo(teleportTimeout) < 0) continue;
+
+            attemptAutoTeleport(player, current);
         }
     }
 
-    private boolean isAutoAfkSuspended(Player player) {
+    private void attemptAutoTeleport(Player player, AFKAreaConfig current) {
+        UUID playerId = player.getUniqueId();
+
+        if(!autoTeleportAttempts.add(playerId)) return;
+
+        String areaId = current.autoTeleportTargetArea;
+        if(areaId == null || areaId.isBlank()) {
+            plugin.getLogger().warning("Automatic AFK teleport for player '" + player.getName() + "' failed: no target area is configured");
+            return;
+        }
+
+        AreaTeleportService.Result result = areaTeleportService.teleport(player, areaId, true);
+
+        if(result != AreaTeleportService.Result.SUCCESS) {
+            plugin.getLogger().warning("Automatic AFK teleport for player '" + player.getName() + "' to area '" + areaId + "' failed: " + result);
+        }
+    }
+
+    private boolean isAutomationSuspended(Player player) {
         return player.hasPermission("afkarea.bypass.auto-afk")
                 || player.getGameMode() == GameMode.SPECTATOR
                 || player.isDead()
                 || player.isSleeping();
+    }
+
+    public void resetAutoTeleportAttempts() {
+        autoTeleportAttempts.clear();
     }
 }

@@ -78,7 +78,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         selectionService = new SelectionService();
 
-        idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService);
+        idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService, areaTeleportService);
         idleTracker.start();
 
         getServer().getPluginManager().registerEvents(new ActivityListener(this, activityService, playerStateService, () -> messages, messageService, tabListService), this);
@@ -125,6 +125,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
         getServer().getOnlinePlayers().stream()
                 .filter(player -> playerStateService.getState(player.getUniqueId()) == PlayerState.AFK)
                 .forEach(tabListService::refreshAfk);
+
+        idleTracker.resetAutoTeleportAttempts();
     }
 
     public AFKAreaConfig config() { return config; }

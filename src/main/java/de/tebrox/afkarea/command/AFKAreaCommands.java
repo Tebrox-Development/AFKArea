@@ -15,6 +15,7 @@ import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionDefault;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -31,7 +32,7 @@ public final class AFKAreaCommands {
     @VCommand("afkarea")
     @VDesc("Teleport to the default AFK area")
     @VPlayerOnly
-    @VPerm(value = "afkarea.command.teleport")
+    @VPerm(value = "afkarea.command.teleport", def = PermissionDefault.TRUE)
     public void root(CommandContext ctx) {
         Player player = (Player) ctx.sender();
 
