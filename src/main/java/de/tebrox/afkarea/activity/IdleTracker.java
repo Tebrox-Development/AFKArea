@@ -92,10 +92,11 @@ public final class IdleTracker {
 
             if(state == PlayerState.ACTIVE && idle.compareTo(afkTimeout) >= 0) {
                 stateService.setState(playerId, PlayerState.AFK);
+                tabListService.applyAfk(player);
+                messageService.send(player, messages.get().afkEnabled);
+                state = PlayerState.AFK;
             }
-            tabListService.applyAfk(player);
-            messageService.send(player, messages.get().afkEnabled);
-            state = PlayerState.AFK;
+
 
             if(!current.autoTeleportEnabled) {
                 autoTeleportAttempts.remove(playerId);
