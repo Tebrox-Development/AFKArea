@@ -1,6 +1,7 @@
 package de.tebrox.afkarea.command;
 
 import de.tebrox.afkarea.area.AreaData;
+import de.tebrox.afkarea.area.TeleportData;
 import de.tebrox.afkarea.area.selection.CuboidSelection;
 import de.tebrox.afkarea.area.selection.SelectionPoint;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
@@ -8,6 +9,7 @@ import de.tebrox.afkarea.region.data.CuboidRegionData;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.Arrays;
@@ -303,6 +305,55 @@ public final class AFKAreaCommands {
                     error.printStackTrace();
 
                     plugin.messageService().send(ctx.sender(), plugin.messages().areaDeleteFailed, Placeholder.unparsed("area", id));
+                }
+        );
+    }
+
+    @VSub("afkarea setteleport")
+    @VDesc("Set the teleport location of an AFK area")
+    @VPlayerOnly
+    @VPerm("afkarea.admin.setteleport")
+    public void setTeleport(CommandContext ctx) {
+        Player player = (Player) ctx.sender();
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 1) {
+            plugin.messageService().send(player, plugin.messages().areaSetTeleportUsage);
+            return;
+        }
+
+        String id = args[0];
+
+        AreaData current = plugin.areaManager().getArea(id);
+
+        if (current == null) {
+            plugin.messageService().send(player, plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        Location location = player.getLocation();
+
+        TeleportData teleport = new TeleportData(
+                location.getWorld().getName(),
+                location.getX(),
+                location.getY(),
+                location.getZ(),
+                location.getYaw(),
+                location.getPitch()
+        );
+
+        AreaData updated = current.copy();
+        updated.setTeleport(teleport);
+
+        plugin.areaManager().saveArea(
+                updated,
+                () -> plugin.messageService().send(player, plugin.messages().areaTeleportSet, Placeholder.unparsed("area", id)),
+                error -> {
+                    plugin.getLogger().severe("Failed to set teleport location for AFK area '" + id + "': " + error.getMessage());
+
+                    error.printStackTrace();
+
+                    plugin.messageService().send(player, plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
                 }
         );
     }

@@ -87,4 +87,10 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.delete-failed")
     public String areaDeleteFailed = "<red>Failed to delete AFK area '<area>'. Check the server console.</red>";
+
+    @ConfigKey("area.setteleport-usage")
+    public String areaSetTeleportUsage = "<red>Usage: /afkarea setteleport <id></red>";
+
+    @ConfigKey("area.teleport-set")
+    public String areaTeleportSet = "<green>Teleport location for AFK area '<area>' was updated.</green>";
 }

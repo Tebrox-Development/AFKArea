@@ -7,20 +7,12 @@ import de.tebrox.vertexCore.database.annotation.DbExpose;
 public final class AreaData implements DataObject {
     private String uniqueId;
 
-    @DbExpose
-    private String name;
-
-    @DbExpose
-    private boolean enabled = true;
-
-    @DbExpose
-    private int priority = 0;
-
-    @DbExpose
-    private String regionType;
-
-    @DbExpose
-    private CuboidRegionData cuboidRegion;
+    @DbExpose private String name;
+    @DbExpose private boolean enabled = true;
+    @DbExpose private int priority = 0;
+    @DbExpose private String regionType;
+    @DbExpose private CuboidRegionData cuboidRegion;
+    @DbExpose private TeleportData teleport;
 
     public AreaData() {}
 
@@ -79,6 +71,14 @@ public final class AreaData implements DataObject {
         this.cuboidRegion = cuboidRegion;
     }
 
+    public TeleportData getTeleport() {
+        return teleport;
+    }
+
+    public void setTeleport(TeleportData teleport) {
+        this.teleport = teleport;
+    }
+
     public AreaData copy() {
         AreaData copy = new AreaData(uniqueId, name);
 
@@ -86,6 +86,7 @@ public final class AreaData implements DataObject {
         copy.priority = priority;
         copy.regionType = regionType;
         copy.cuboidRegion = cuboidRegion;
+        copy.teleport = teleport;
 
         return copy;
     }
