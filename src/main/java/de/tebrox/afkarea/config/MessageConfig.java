@@ -32,10 +32,32 @@ public final class MessageConfig implements ConfigObject {
     public String reloadSuccess = "<green>AFKArea configuration reloaded.</green>";
 
     @ConfigKey("selection.pos1-set")
-    public String selectionPos1Set =
-            "<green>Position 1 set to <gray><world> <x> <y> <z></gray>.</green>";
+    public String selectionPos1Set = "<green>Position 1 set to <gray><world> <x> <y> <z></gray>.</green>";
 
     @ConfigKey("selection.pos2-set")
-    public String selectionPos2Set =
-            "<green>Position 2 set to <gray><world> <x> <y> <z></gray>.</green>";
+    public String selectionPos2Set = "<green>Position 2 set to <gray><world> <x> <y> <z></gray>.</green>";
+
+    @ConfigKey("area.create-usage")
+    public String areaCreateUsage = "<red>Usage: /afkarea create <id> cuboid</red>";
+
+    @ConfigKey("area.invalid-id")
+    public String areaInvalidId = "<red>Area IDs may only contain lowercase letters, numbers, '-' and '_'.</red>";
+
+    @ConfigKey("area.already-exists")
+    public String areaAlreadyExists = "<red>AFK area '<area>' already exists.</red>";
+
+    @ConfigKey("area.selection-incomplete")
+    public String areaSelectionIncomplete = "<red>You must set both selection positions first.</red>";
+
+    @ConfigKey("area.selection-world-mismatch")
+    public String areaSelectionWorldMismatch = "<red>Both selection positions must be in the same world.</red>";
+
+    @ConfigKey("area.unsupported-region-type")
+    public String areaUnsupportedRegionType = "<red>Unsupported region type '<type>'.</red>";
+
+    @ConfigKey("area.created")
+    public String areaCreated = "<green>AFK area '<area>' was created successfully.</green>";
+
+    @ConfigKey("area.save-failed")
+    public String areaSaveFailed = "<red>Failed to save AFK area '<area>'. Check the server console.</red>";
 }

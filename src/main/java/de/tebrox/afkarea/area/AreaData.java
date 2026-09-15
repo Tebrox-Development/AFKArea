@@ -2,14 +2,24 @@ package de.tebrox.afkarea.area;
 
 import de.tebrox.afkarea.region.data.CuboidRegionData;
 import de.tebrox.vertexCore.database.DataObject;
+import de.tebrox.vertexCore.database.annotation.DbExpose;
 
 public final class AreaData implements DataObject {
     private String uniqueId;
+
+    @DbExpose
     private String name;
+
+    @DbExpose
     private boolean enabled = true;
+
+    @DbExpose
     private int priority = 0;
 
+    @DbExpose
     private String regionType;
+
+    @DbExpose
     private CuboidRegionData cuboidRegion;
 
     public AreaData() {}
