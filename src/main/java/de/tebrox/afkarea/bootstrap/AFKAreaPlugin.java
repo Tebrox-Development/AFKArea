@@ -56,6 +56,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
         areaManager = new AreaManager(this, areaDatabase);
+        areaManager.loadAsync();
 
         messageFile = new Config<>(this, MessageConfig.class);
         messages = messageFile.loadConfigObject();
@@ -70,7 +71,6 @@ public final class AFKAreaPlugin extends JavaPlugin {
         areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService);
         areaManager.setRuntimeChangeListener(() -> getServer().getOnlinePlayers().forEach(areaSessionService::sync));
         getServer().getPluginManager().registerEvents(new AreaSessionListener(areaSessionService), this);
-        areaManager.loadAsync();
 
         selectionService = new SelectionService();
 

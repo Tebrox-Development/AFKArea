@@ -17,7 +17,7 @@ public final class AreaManager {
     private final List<RuntimeArea> runtimeAreas = new ArrayList<>();
 
     private boolean loaded;
-    private Runnable runtimeChangeListener;
+    private Runnable runtimeChangeListener = () -> {};
 
     public AreaManager(JavaPlugin plugin, Database<AreaData> database) {
         this.plugin = plugin;
@@ -34,7 +34,6 @@ public final class AreaManager {
                     plugin.getLogger().severe("Failed to load AFK areas: " + error.getMessage());
                     error.printStackTrace();
                 });
-        runtimeChangeListener.run();
     }
 
     private void replaceCache(Collection<AreaData>loadedAreas) {
