@@ -2,6 +2,7 @@ package de.tebrox.afkarea.area;
 
 import de.tebrox.afkarea.activity.ActivityService;
 import de.tebrox.afkarea.config.MessageConfig;
+import de.tebrox.afkarea.display.AreaVisibilityService;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.state.PlayerState;
@@ -23,16 +24,18 @@ public final class AreaSessionService {
     private final TabListService tabListService;
     private final Supplier<MessageConfig> messages;
     private final MessageService messageService;
+    private final AreaVisibilityService visibilityService;
 
     private final Map<UUID, String> currentAreas = new HashMap<>();
 
-    public AreaSessionService(AreaManager areaManager, PlayerStateService stateService, ActivityService activityService, TabListService tabListService, Supplier<MessageConfig> messages, MessageService messageService) {
+    public AreaSessionService(AreaManager areaManager, PlayerStateService stateService, ActivityService activityService, TabListService tabListService, Supplier<MessageConfig> messages, MessageService messageService, AreaVisibilityService visibilityService) {
         this.areaManager = areaManager;
         this.stateService = stateService;
         this.activityService = activityService;
         this.tabListService = tabListService;
         this.messages = messages;
         this.messageService = messageService;
+        this.visibilityService = visibilityService;
     }
 
     public String getAreaId(UUID playerId) {
@@ -67,6 +70,8 @@ public final class AreaSessionService {
         currentAreas.put(playerId, area.getUniqueId());
         stateService.setState(playerId, PlayerState.AFK_AREA);
 
+        visibilityService.refreshTarget(player);
+
         messageService.send(player, messages.get().areaEntered, Placeholder.unparsed("area", displayName(area)));
     }
 
@@ -75,6 +80,9 @@ public final class AreaSessionService {
 
         currentAreas.remove(playerId);
         stateService.setState(playerId, PlayerState.ACTIVE);
+
+        visibilityService.refreshTarget(player);
+
         activityService.recordActivity(playerId);
 
         AreaData previous = areaManager.getArea(areaId);

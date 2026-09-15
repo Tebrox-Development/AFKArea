@@ -2,10 +2,7 @@ package de.tebrox.afkarea.config;
 
 import de.tebrox.vertexCore.config.ConfigObject;
 import de.tebrox.vertexCore.config.annotation.ConfigKey;
-import de.tebrox.vertexCore.config.annotation.ConfigSection;
 import de.tebrox.vertexCore.config.annotation.StoreAt;
-
-import java.beans.Visibility;
 
 @StoreAt("config.yml")
 public final class AFKAreaConfig implements ConfigObject {

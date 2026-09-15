@@ -12,6 +12,8 @@ import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
+import de.tebrox.afkarea.display.AreaVisibilityListener;
+import de.tebrox.afkarea.display.AreaVisibilityService;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.persistence.AFKAreaDatabaseSettings;
@@ -47,6 +49,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private SelectionService selectionService;
 
     private AreaSessionService areaSessionService;
+    private AreaVisibilityService visibilityService;
 
     @Override
     public void onEnable() {
@@ -56,7 +59,6 @@ public final class AFKAreaPlugin extends JavaPlugin {
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
         areaManager = new AreaManager(this, areaDatabase);
-        areaManager.loadAsync();
 
         messageFile = new Config<>(this, MessageConfig.class);
         messages = messageFile.loadConfigObject();
@@ -67,10 +69,12 @@ public final class AFKAreaPlugin extends JavaPlugin {
         activityService = new ActivityService();
 
         tabListService = new TabListService(() -> messages, messageService);
+        visibilityService = new AreaVisibilityService(this, playerStateService, () -> config);
 
-        areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService);
+        areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService);
         areaManager.setRuntimeChangeListener(() -> getServer().getOnlinePlayers().forEach(areaSessionService::sync));
         getServer().getPluginManager().registerEvents(new AreaSessionListener(areaSessionService), this);
+        areaManager.loadAsync();
 
         selectionService = new SelectionService();
 
@@ -95,6 +99,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         VertexCoreApi.get().commands().unregisterAll(this);
 
+        visibilityService.restoreAll(getServer().getOnlinePlayers());
         tabListService.restoreAll(getServer().getOnlinePlayers());
         selectionService.clearAll();
 
@@ -111,6 +116,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     public void reloadConfigs() {
         config = configFile.loadConfigObject();
+
+        visibilityService.refreshAll(getServer().getOnlinePlayers());
+
         messages = messageFile.loadConfigObject();
 
         areaManager.loadAsync();
