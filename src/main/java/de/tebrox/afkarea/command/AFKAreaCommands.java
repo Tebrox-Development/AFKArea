@@ -10,6 +10,7 @@ import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
 
+import java.util.Arrays;
 import java.util.Locale;
 import java.util.logging.Level;
 
@@ -229,6 +230,49 @@ public final class AFKAreaCommands {
                     error.printStackTrace();
 
                     plugin.messageService().send(player, plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
+                }
+        );
+    }
+
+    @VSub("afkarea rename")
+    @VDesc("Rename an AFK area")
+    @VPerm("afkarea.admin.rename")
+    public void rename(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaRenameUsage);
+            return;
+        }
+
+        String id = args[0];
+
+        AreaData current = plugin.areaManager().getArea(id);
+
+        if (current == null) {
+            plugin.messageService().send( ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        String name = String.join(" ", Arrays.copyOfRange(args, 1, args.length)).trim();
+
+        if (name.isEmpty()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaInvalidName);
+            return;
+        }
+
+        AreaData updated = current.copy();
+        updated.setName(name);
+
+        plugin.areaManager().saveArea(
+                updated,
+                () -> plugin.messageService().send(ctx.sender(), plugin.messages().areaRenamed, Placeholder.unparsed("area", id), Placeholder.unparsed("name", name)),
+                error -> {
+                    plugin.getLogger().severe("Failed to rename AFK area '" + id + "': " + error.getMessage());
+
+                    error.printStackTrace();
+
+                    plugin.messageService().send(ctx.sender(), plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
                 }
         );
     }

@@ -69,4 +69,13 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.redefined")
     public String areaRedefined = "<green>AFK area '<area>' was redefined successfully.</green>";
+
+    @ConfigKey("area.rename-usage")
+    public String areaRenameUsage = "<red>Usage: /afkarea rename <id> <name></red>";
+
+    @ConfigKey("area.invalid-name")
+    public String areaInvalidName = "<red>The area name must not be empty.</red>";
+
+    @ConfigKey("area.renamed")
+    public String areaRenamed = "<green>AFK area '<area>' was renamed to '<name>'.</green>";
 }
