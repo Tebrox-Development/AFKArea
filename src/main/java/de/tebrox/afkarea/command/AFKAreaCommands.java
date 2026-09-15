@@ -12,7 +12,6 @@ import org.bukkit.entity.Player;
 
 import java.util.Arrays;
 import java.util.Locale;
-import java.util.logging.Level;
 
 public final class AFKAreaCommands {
     private final AFKAreaPlugin plugin;
@@ -273,6 +272,37 @@ public final class AFKAreaCommands {
                     error.printStackTrace();
 
                     plugin.messageService().send(ctx.sender(), plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
+                }
+        );
+    }
+
+    @VSub("afkarea delete")
+    @VDesc("Delete an AFK area")
+    @VPerm("afkarea.admin.delete")
+    public void delete(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 1) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaDeleteUsage);
+            return;
+        }
+
+        String id = args[0];
+
+        if (!plugin.areaManager().hasArea(id)) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        plugin.areaManager().deleteArea(
+                id,
+                () -> plugin.messageService().send(ctx.sender(), plugin.messages().areaDeleted, Placeholder.unparsed("area", id)),
+                error -> {
+                    plugin.getLogger().severe("Failed to delete AFK area '" + id + "': " + error.getMessage());
+
+                    error.printStackTrace();
+
+                    plugin.messageService().send(ctx.sender(), plugin.messages().areaDeleteFailed, Placeholder.unparsed("area", id));
                 }
         );
     }

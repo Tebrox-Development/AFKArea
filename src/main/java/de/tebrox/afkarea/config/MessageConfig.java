@@ -78,4 +78,13 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.renamed")
     public String areaRenamed = "<green>AFK area '<area>' was renamed to '<name>'.</green>";
+
+    @ConfigKey("area.delete-usage")
+    public String areaDeleteUsage = "<red>Usage: /afkarea delete <id></red>";
+
+    @ConfigKey("area.deleted")
+    public String areaDeleted = "<green>AFK area '<area>' was deleted successfully.</green>";
+
+    @ConfigKey("area.delete-failed")
+    public String areaDeleteFailed = "<red>Failed to delete AFK area '<area>'. Check the server console.</red>";
 }
