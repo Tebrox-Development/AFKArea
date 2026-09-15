@@ -93,4 +93,16 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.teleport-set")
     public String areaTeleportSet = "<green>Teleport location for AFK area '<area>' was updated.</green>";
+
+    @ConfigKey("area.tp-usage")
+    public String areaTpUsage = "<red>Usage: /afkarea tp <id></red>";
+
+    @ConfigKey("area.teleport-not-set")
+    public String areaTeleportNotSet = "<red>AFK area '<area>' has no teleport location configured.</red>";
+
+    @ConfigKey("area.teleport-world-unavailable")
+    public String areaTeleportWorldUnavailable = "<red>The world '<world>' for AFK area '<area>' is not available.</red>";
+
+    @ConfigKey("area.teleported")
+    public String areaTeleported = "<green>Teleported to AFK area '<area>'.</green>";
 }
