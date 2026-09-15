@@ -69,11 +69,12 @@ public final class AFKAreaPlugin extends JavaPlugin {
         activityService = new ActivityService();
 
         tabListService = new TabListService(() -> messages, messageService);
-        visibilityService = new AreaVisibilityService(this, playerStateService, () -> config);
+        visibilityService = new AreaVisibilityService(this, playerStateService, () -> config, tabListService);
 
         areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService);
         areaManager.setRuntimeChangeListener(() -> getServer().getOnlinePlayers().forEach(areaSessionService::sync));
         getServer().getPluginManager().registerEvents(new AreaSessionListener(areaSessionService), this);
+        getServer().getPluginManager().registerEvents(new AreaVisibilityListener(this, visibilityService), this);
         areaManager.loadAsync();
 
         selectionService = new SelectionService();
@@ -116,10 +117,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     public void reloadConfigs() {
         config = configFile.loadConfigObject();
+        messages = messageFile.loadConfigObject();
 
         visibilityService.refreshAll(getServer().getOnlinePlayers());
-
-        messages = messageFile.loadConfigObject();
 
         areaManager.loadAsync();
 

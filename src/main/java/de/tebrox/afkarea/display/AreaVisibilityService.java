@@ -17,18 +17,22 @@ public class AreaVisibilityService {
     private final JavaPlugin plugin;
     private final PlayerStateService stateService;
     private final Supplier<AFKAreaConfig> config;
+    private final TabListService tabListService;
 
     private final Set<VisibilityPair> tabHiddenByUs = new HashSet<>();
 
-    public AreaVisibilityService(JavaPlugin plugin, PlayerStateService stateService, Supplier<AFKAreaConfig> config) {
+    public AreaVisibilityService(JavaPlugin plugin, PlayerStateService stateService, Supplier<AFKAreaConfig> config, TabListService tabListService) {
         this.plugin = plugin;
         this.stateService = stateService;
         this.config = config;
+        this.tabListService = tabListService;
     }
 
     public void refreshTarget(Player target) {
+        syncMarker(target);
+
         for(Player viewer : plugin.getServer().getOnlinePlayers()) {
-            if(viewer.equals(target)) continue;;
+            if(viewer.equals(target)) continue;
             syncPair(viewer, target);
         }
     }
@@ -41,6 +45,10 @@ public class AreaVisibilityService {
     }
 
     public void refreshAll(Collection<? extends Player> players) {
+        for(Player player : players) {
+            syncMarker(player);
+        }
+
         for(Player viewer : players) {
             for(Player target : players) {
                 if(viewer.equals(target)) continue;
@@ -62,6 +70,7 @@ public class AreaVisibilityService {
 
         if(hideWorld && hideTab) {
             viewer.hidePlayer(plugin, target);
+            return;
         }
 
         if(hideWorld) {
@@ -120,6 +129,19 @@ public class AreaVisibilityService {
             }
         }
         tabHiddenByUs.clear();
+    }
+
+    private void syncMarker(Player target) {
+        if(stateService.getState(target.getUniqueId()) != PlayerState.AFK_AREA) {
+            tabListService.clearAfkArea(target);
+            return;
+        }
+
+        if(config.get().hideFromTablist) {
+            tabListService.applyAfkArea(target);
+        }else{
+            tabListService.clearAfkArea(target);
+        }
     }
 
     private record VisibilityPair(UUID viewerId, UUID targetId) {}
