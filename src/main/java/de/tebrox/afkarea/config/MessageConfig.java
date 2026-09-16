@@ -137,4 +137,40 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reward.received")
     public String rewardReceived = "<green>You received reward <yellow><reward></yellow> in <aqua><area_name></aqua>.</green>";
+
+    @ConfigKey("household.link-usage")
+    public String householdLinkUsage = "<red>Usage: /afkarea household link <player1> <player2></red>";
+
+    @ConfigKey("household.unlink-usage")
+    public String householdUnlinkUsage = "<red>Usage: /afkarea household unlink <player></red>";
+
+    @ConfigKey("household.unknown-player")
+    public String householdUnknownPlayer = "<red>Player '<player>' is not known to this server.</red>";
+
+    @ConfigKey("household.same-player")
+    public String householdSamePlayer = "<red>A player cannot be linked to themselves.</red>";
+
+    @ConfigKey("household.already-same")
+    public String householdAlreadySame = "<yellow><player1> and <player2> are already part of the same household.</yellow>";
+
+    @ConfigKey("household.different-households")
+    public String householdDifferentHouseholds = "<red><player1> and <player2> already belong to different households. Unlink one of them first.</red>";
+
+    @ConfigKey("household.linked")
+    public String householdLinked = "<green>Linked <player1> and <player2> as household members.</green>";
+
+    @ConfigKey("household.not-linked")
+    public String householdNotLinked = "<yellow><player> is not part of a household.</yellow>";
+
+    @ConfigKey("household.unlinked")
+    public String householdUnlinked = "<green>Removed <player> from their household.</green>";
+
+    @ConfigKey("household.data-loading")
+    public String householdDataLoading = "<yellow>Household data is still loading. Please try again.</yellow>";
+
+    @ConfigKey("household.busy")
+    public String householdBusy = "<yellow>This household is currently being updated. Please try again.</yellow>";
+
+    @ConfigKey("household.save-failed")
+    public String householdSaveFailed = "<red>Failed to update household data. Check the server console.</red>";
 }

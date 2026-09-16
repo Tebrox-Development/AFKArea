@@ -12,6 +12,8 @@ import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.display.AreaVisibilityListener;
 import de.tebrox.afkarea.display.AreaVisibilityService;
 import de.tebrox.afkarea.display.TabListService;
+import de.tebrox.afkarea.household.HouseholdData;
+import de.tebrox.afkarea.household.HouseholdManager;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.persistence.AFKAreaDatabaseSettings;
 import de.tebrox.afkarea.reward.RewardService;
@@ -23,6 +25,8 @@ import de.tebrox.vertexCore.config.Config;
 import de.tebrox.vertexCore.database.Database;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import javax.xml.crypto.Data;
 
 
 public final class AFKAreaPlugin extends JavaPlugin {
@@ -54,6 +58,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private RewardService rewardService;
     private RewardSessionService rewardSessionService;
 
+    private Database<HouseholdData> householdDatabase;
+    private HouseholdManager householdManager;
+
     @Override
     public void onEnable() {
         configFile = new Config<>(this, AFKAreaConfig.class);
@@ -61,7 +68,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
+        householdDatabase = new Database<>(this, databaseSettings, HouseholdData.class);
         areaManager = new AreaManager(this, areaDatabase);
+        householdManager = new HouseholdManager(this, householdDatabase);
         areaTeleportService = new AreaTeleportService(areaManager);
 
         messageFile = new Config<>(this, MessageConfig.class);
@@ -84,6 +93,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new AreaSessionListener(areaSessionService), this);
         getServer().getPluginManager().registerEvents(new AreaVisibilityListener(this, visibilityService), this);
         areaManager.loadAsync();
+        householdManager.loadAsync();
 
         selectionService = new SelectionService();
         rewardSessionService.start();
@@ -116,6 +126,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         playerStateService.clearAll();
         activityService.clearAll();
 
+        if(householdManager != null) householdManager.clear();
         if(areaManager != null) areaManager.clear();
         if(areaDatabase != null) areaDatabase.close();
 
@@ -152,4 +163,5 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public AreaSessionService areaSessionService() { return areaSessionService; }
     public AreaTeleportService areaTeleportService() { return areaTeleportService; }
     public RewardService rewardService() { return rewardService; }
+    public HouseholdManager householdManager() { return householdManager; }
 }

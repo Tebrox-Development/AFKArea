@@ -12,7 +12,7 @@ import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.World;
+import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+
+import de.tebrox.afkarea.household.HouseholdManager;
 
 public final class AFKAreaCommands {
     private final AFKAreaPlugin plugin;
@@ -490,6 +492,114 @@ public final class AFKAreaCommands {
                         describeTeleport(area)
                 )
         );
+    }
+
+    @VSub("afkarea household link")
+    @VDesc("Link two player accounts as household members")
+    @VPerm("afkarea.admin.household")
+    public void householdLink(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdLinkUsage);
+            return;
+        }
+
+        String firstInput = args[0];
+        String secondInput = args[1];
+
+        OfflinePlayer first = findKnownPlayer(firstInput);
+
+        if (first == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdUnknownPlayer, Placeholder.unparsed("player", firstInput));
+            return;
+        }
+
+        OfflinePlayer second = findKnownPlayer(secondInput);
+
+        if (second == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdUnknownPlayer, Placeholder.unparsed("player", secondInput));
+            return;
+        }
+
+        String firstName = first.getName() == null ? firstInput : first.getName();
+        String secondName = second.getName() == null ? secondInput : second.getName();
+
+        plugin.householdManager().link(
+                first.getUniqueId(),
+                second.getUniqueId(),
+                result -> {
+                    switch (result) {
+                        case LINKED -> plugin.messageService().send(ctx.sender(), plugin.messages().householdLinked, Placeholder.unparsed("player1", firstName), Placeholder.unparsed("player2", secondName));
+
+                        case SAME_PLAYER -> plugin.messageService().send(ctx.sender(), plugin.messages().householdSamePlayer);
+                        case ALREADY_SAME_HOUSEHOLD -> plugin.messageService().send(ctx.sender(), plugin.messages().householdAlreadySame, Placeholder.unparsed("player1", firstName), Placeholder.unparsed("player2", secondName));
+                        case DIFFERENT_HOUSEHOLDS -> plugin.messageService().send(ctx.sender(), plugin.messages().householdDifferentHouseholds, Placeholder.unparsed("player1", firstName), Placeholder.unparsed("player2", secondName));
+                        case DATA_LOADING -> plugin.messageService().send(ctx.sender(), plugin.messages().householdDataLoading);
+                        case BUSY -> plugin.messageService().send(ctx.sender(), plugin.messages().householdBusy);
+                    }
+                },
+                error -> {
+                    plugin.getLogger().severe("Failed to link household members: " + error.getMessage());
+                    error.printStackTrace();
+
+                    plugin.messageService().send(ctx.sender(), plugin.messages().householdSaveFailed);
+                }
+        );
+    }
+
+    @VSub("afkarea household unlink")
+    @VDesc("Remove a player from their household")
+    @VPerm("afkarea.admin.household")
+    public void householdUnlink(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 1) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdUnlinkUsage);
+            return;
+        }
+
+        String input = args[0];
+
+        OfflinePlayer player = findKnownPlayer(input);
+
+        if (player == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdUnknownPlayer, Placeholder.unparsed("player", input));
+            return;
+        }
+
+        String name = player.getName() == null ? input : player.getName();
+
+        plugin.householdManager().unlink(
+                player.getUniqueId(),
+                result -> {
+                    switch (result) {
+                        case UNLINKED -> plugin.messageService().send(ctx.sender(), plugin.messages().householdUnlinked, Placeholder.unparsed("player", name));
+                        case NOT_LINKED -> plugin.messageService().send(ctx.sender(), plugin.messages().householdNotLinked, Placeholder.unparsed("player", name));
+                        case DATA_LOADING -> plugin.messageService().send(ctx.sender(), plugin.messages().householdDataLoading);
+                        case BUSY -> plugin.messageService().send(ctx.sender(), plugin.messages().householdBusy);
+                    }
+                },
+                error -> {
+                    plugin.getLogger().severe("Failed to unlink household member: " + error.getMessage());
+
+                    error.printStackTrace();
+                    plugin.messageService().send(ctx.sender(), plugin.messages().householdSaveFailed);
+                }
+        );
+    }
+
+    private OfflinePlayer findKnownPlayer(String name) {
+        Player online = Bukkit.getPlayerExact(name);
+        if(online != null) return online;
+
+        for(OfflinePlayer offline : Bukkit.getOfflinePlayers()) {
+            String knownName = offline.getName();
+
+            if(knownName != null && knownName.equalsIgnoreCase(name)) return offline;
+        }
+
+        return null;
     }
 
     private String describeRegion(AreaData area) {
