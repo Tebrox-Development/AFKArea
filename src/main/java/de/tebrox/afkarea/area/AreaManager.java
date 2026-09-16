@@ -186,7 +186,7 @@ public final class AreaManager {
                 return null;
             }
 
-            return new WorldGuardRegionProvider(worldGuardIntegration, region.getWorld(), region.getRegionId());
+            return new WorldGuardRegionProvider(worldGuardIntegration, region.getWorld(), region.getRegionId(), region.isIncludeChildren());
         }
 
         plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' uses unsupported region type '" + regionType + "'");
