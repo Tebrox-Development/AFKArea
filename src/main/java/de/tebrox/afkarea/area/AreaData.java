@@ -102,6 +102,7 @@ public final class AreaData implements DataObject {
         copy.priority = priority;
         copy.regionType = regionType;
         copy.cuboidRegion = cuboidRegion;
+        copy.worldGuardRegion = worldGuardRegion;
         copy.teleport = teleport;
         copy.rewards = rewards == null ? null : rewards.copy();
 

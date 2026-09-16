@@ -181,7 +181,7 @@ public final class AreaManager {
                 return null;
             }
 
-            if(region.getWorld() == null || region.getWorld().isBlank()) {
+            if(region.getWorld() == null || region.getWorld().isBlank() || region.getRegionId() == null || region.getRegionId().isBlank()) {
                 plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' has invalid WorldGuard region data");
                 return null;
             }
