@@ -15,6 +15,7 @@ import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.persistence.AFKAreaDatabaseSettings;
 import de.tebrox.afkarea.reward.RewardService;
+import de.tebrox.afkarea.reward.RewardSessionService;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import de.tebrox.vertexCore.VertexCoreApi;
@@ -51,6 +52,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private AreaTeleportService areaTeleportService;
 
     private RewardService rewardService;
+    private RewardSessionService rewardSessionService;
 
     @Override
     public void onEnable() {
@@ -81,6 +83,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         selectionService = new SelectionService();
         rewardService = new RewardService(this);
+        rewardSessionService = new RewardSessionService(this, areaManager, rewardService);
+        rewardSessionService.start();
 
         idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService, areaTeleportService);
         idleTracker.start();
@@ -114,6 +118,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         if(areaDatabase != null) areaDatabase.close();
 
         areaSessionService.clearAll();
+        rewardSessionService.stop();
 
         getLogger().info("AFKArea has been disabled");
     }

@@ -73,7 +73,7 @@ public final class RewardService {
         return command
                 .replace("<player>", player.getName())
                 .replace("<uuid>", player.getUniqueId().toString())
-                .replace("<area", area.getUniqueId())
+                .replace("<area>", area.getUniqueId())
                 .replace("<area_name>", areaName)
                 .replace("<reward>", rewardId);
     }

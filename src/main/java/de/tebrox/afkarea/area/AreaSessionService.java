@@ -5,6 +5,7 @@ import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.display.AreaVisibilityService;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
+import de.tebrox.afkarea.reward.RewardSessionService;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -25,10 +26,11 @@ public final class AreaSessionService {
     private final Supplier<MessageConfig> messages;
     private final MessageService messageService;
     private final AreaVisibilityService visibilityService;
+    private final RewardSessionService rewardSessionService;
 
     private final Map<UUID, String> currentAreas = new HashMap<>();
 
-    public AreaSessionService(AreaManager areaManager, PlayerStateService stateService, ActivityService activityService, TabListService tabListService, Supplier<MessageConfig> messages, MessageService messageService, AreaVisibilityService visibilityService) {
+    public AreaSessionService(AreaManager areaManager, PlayerStateService stateService, ActivityService activityService, TabListService tabListService, Supplier<MessageConfig> messages, MessageService messageService, AreaVisibilityService visibilityService, RewardSessionService rewardSessionService) {
         this.areaManager = areaManager;
         this.stateService = stateService;
         this.activityService = activityService;
@@ -36,6 +38,7 @@ public final class AreaSessionService {
         this.messages = messages;
         this.messageService = messageService;
         this.visibilityService = visibilityService;
+        this.rewardSessionService = rewardSessionService;
     }
 
     public String getAreaId(UUID playerId) {
@@ -69,6 +72,7 @@ public final class AreaSessionService {
 
         currentAreas.put(playerId, area.getUniqueId());
         stateService.setState(playerId, PlayerState.AFK_AREA);
+        rewardSessionService.begin(player, area);
 
         visibilityService.refreshTarget(player);
 
@@ -79,6 +83,7 @@ public final class AreaSessionService {
         UUID playerId = player.getUniqueId();
 
         currentAreas.remove(playerId);
+        rewardSessionService.clear(playerId);
         stateService.setState(playerId, PlayerState.ACTIVE);
 
         visibilityService.refreshTarget(player);
@@ -98,6 +103,7 @@ public final class AreaSessionService {
 
     public void clear(UUID playerId) {
         currentAreas.remove(playerId);
+        rewardSessionService.clear(playerId);
     }
 
     public void clearAll() {
