@@ -75,15 +75,17 @@ public final class AFKAreaPlugin extends JavaPlugin {
         tabListService = new TabListService(() -> messages, messageService);
         visibilityService = new AreaVisibilityService(this, playerStateService, () -> config, tabListService);
 
-        areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService);
+        rewardService = new RewardService(this);
+        rewardSessionService = new RewardSessionService(this, areaManager, rewardService);
+
+
+        areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService, rewardSessionService);
         areaManager.setRuntimeChangeListener(() -> getServer().getOnlinePlayers().forEach(areaSessionService::sync));
         getServer().getPluginManager().registerEvents(new AreaSessionListener(areaSessionService), this);
         getServer().getPluginManager().registerEvents(new AreaVisibilityListener(this, visibilityService), this);
         areaManager.loadAsync();
 
         selectionService = new SelectionService();
-        rewardService = new RewardService(this);
-        rewardSessionService = new RewardSessionService(this, areaManager, rewardService);
         rewardSessionService.start();
 
         idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService, areaTeleportService);

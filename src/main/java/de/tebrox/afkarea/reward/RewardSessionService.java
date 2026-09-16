@@ -51,6 +51,10 @@ public final class RewardSessionService {
         sessions.remove(playerId);
     }
 
+    public void clearAll() {
+        sessions.clear();
+    }
+
     private void tick() {
         long now = System.nanoTime();
 
@@ -76,14 +80,16 @@ public final class RewardSessionService {
 
             if(config == null) continue;
 
+            if(!"interval".equalsIgnoreCase(config.getScheduleType())) continue;
+
             int intervalSeconds = config.getIntervalSeconds();
 
             if(intervalSeconds <= 0) continue;
 
             long intervalNanos = TimeUnit.SECONDS.toNanos(intervalSeconds);
-            long refence = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
+            long reference = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
 
-            if(now - refence <intervalNanos) continue;
+            if(now - reference <intervalNanos) continue;
             session.lastRewardAt = now;
             rewardService.grant(player, area, config.getRolls());
         }

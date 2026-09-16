@@ -108,5 +108,6 @@ public final class AreaSessionService {
 
     public void clearAll() {
         currentAreas.clear();
+        rewardSessionService.clearAll();
     }
 }
