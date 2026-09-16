@@ -134,4 +134,7 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.unavailable")
     public String areaUnavailable = "<red>The configured AFK area is currently unavailable.</red>";
+
+    @ConfigKey("reward.received")
+    public String rewardReceived = "<green>You received reward <yellow><reward></yellow> in <aqua><area_name></aqua>.</green>";
 }

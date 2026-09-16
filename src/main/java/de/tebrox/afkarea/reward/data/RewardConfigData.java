@@ -9,6 +9,8 @@ public final class RewardConfigData {
     private int rolls = 1;
     private boolean allowDuplicates;
 
+    private String message;
+
     private List<CommandRewardData> rewards = new ArrayList<>();
     private List<RewardMilestoneData> milestones = new ArrayList<>();
 
@@ -60,6 +62,14 @@ public final class RewardConfigData {
         this.milestones = milestones == null ? new ArrayList<>() : new ArrayList<>(milestones);
     }
 
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
     public RewardConfigData copy() {
         RewardConfigData copy = new RewardConfigData();
 
@@ -79,6 +89,8 @@ public final class RewardConfigData {
         for (RewardMilestoneData milestone : milestones) {
             copy.milestones.add(milestone.copy());
         }
+
+        copy.message = message;
 
         return copy;
     }

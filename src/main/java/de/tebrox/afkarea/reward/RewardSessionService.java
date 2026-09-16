@@ -80,19 +80,17 @@ public final class RewardSessionService {
 
             String scheduleType = config.getScheduleType();
             if("interval".equalsIgnoreCase(scheduleType)) {
-                tickIntervall(player, area, config, session, now);
+                tickInterval(player, area, config, session, now);
                 continue;
             }
 
             if("milestones".equalsIgnoreCase(scheduleType)) {
-                tickMilesstones(player, area, config, session, now);
+                tickMilestones(player, area, config, session, now);
             }
-
-
         }
     }
 
-    private void tickIntervall(Player player, AreaData area, RewardConfigData config, Session session, long now) {
+    private void tickInterval(Player player, AreaData area, RewardConfigData config, Session session, long now) {
         int intervalSeconds = config.getIntervalSeconds();
         if(intervalSeconds <= 0) return;
 
@@ -104,7 +102,7 @@ public final class RewardSessionService {
         rewardService.grant(player, area, config.getRolls());
     }
 
-    private void tickMilesstones(Player player, AreaData area, RewardConfigData config, Session session, long now) {
+    private void tickMilestones(Player player, AreaData area, RewardConfigData config, Session session, long now) {
         List<RewardMilestoneData> milestones = config.getMilestones();
         if(milestones == null || milestones.isEmpty()) return;
 
