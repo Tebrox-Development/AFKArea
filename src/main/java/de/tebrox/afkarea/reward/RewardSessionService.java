@@ -3,14 +3,12 @@ package de.tebrox.afkarea.reward;
 import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.area.AreaManager;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
+import de.tebrox.afkarea.reward.data.RewardMilestoneData;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 public final class RewardSessionService {
@@ -80,18 +78,53 @@ public final class RewardSessionService {
 
             if(config == null) continue;
 
-            if(!"interval".equalsIgnoreCase(config.getScheduleType())) continue;
+            String scheduleType = config.getScheduleType();
+            if("interval".equalsIgnoreCase(scheduleType)) {
+                tickIntervall(player, area, config, session, now);
+                continue;
+            }
 
-            int intervalSeconds = config.getIntervalSeconds();
+            if("milestones".equalsIgnoreCase(scheduleType)) {
+                tickMilesstones(player, area, config, session, now);
+            }
 
-            if(intervalSeconds <= 0) continue;
 
-            long intervalNanos = TimeUnit.SECONDS.toNanos(intervalSeconds);
-            long reference = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
+        }
+    }
 
-            if(now - reference <intervalNanos) continue;
-            session.lastRewardAt = now;
-            rewardService.grant(player, area, config.getRolls());
+    private void tickIntervall(Player player, AreaData area, RewardConfigData config, Session session, long now) {
+        int intervalSeconds = config.getIntervalSeconds();
+        if(intervalSeconds <= 0) return;
+
+        long intervalNanos = TimeUnit.SECONDS.toNanos(intervalSeconds);
+        long reference = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
+
+        if(now - reference < intervalNanos) return;
+        session .lastRewardAt = now;
+        rewardService.grant(player, area, config.getRolls());
+    }
+
+    private void tickMilesstones(Player player, AreaData area, RewardConfigData config, Session session, long now) {
+        List<RewardMilestoneData> milestones = config.getMilestones();
+        if(milestones == null || milestones.isEmpty()) return;
+
+        long elapsed = now - session.startedAt;
+        for(int index = 0; index < milestones.size(); index++) {
+            if(session.completedMilestones.contains(index)) continue;
+            RewardMilestoneData milestone = milestones.get(index);
+
+            if(milestone == null || milestone.getAfterSeconds() <= 0) {
+                session.completedMilestones.add(index);
+                continue;
+            }
+
+            long required = TimeUnit.SECONDS.toNanos(milestone.getAfterSeconds());
+            if(elapsed < required) continue;
+
+            session.completedMilestones.add(index);
+            rewardService.grant(player, area, milestone.getRolls());
+
+            if(sessions.get(player.getUniqueId()) != session) break;
         }
     }
 
@@ -99,6 +132,8 @@ public final class RewardSessionService {
         private final String areaId;
         private final long startedAt;
         private long lastRewardAt;
+
+        private final Set<Integer> completedMilestones = new HashSet<>();
 
         private Session(String areaId, long startedAt) {
             this.areaId = areaId;
