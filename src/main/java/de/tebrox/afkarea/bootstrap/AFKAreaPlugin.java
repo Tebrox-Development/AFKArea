@@ -83,7 +83,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         visibilityService = new AreaVisibilityService(this, playerStateService, () -> config, tabListService);
 
         rewardService = new RewardService(this, () -> messages, messageService);
-        rewardSessionService = new RewardSessionService(this, areaManager, rewardService, () -> config);
+        rewardSessionService = new RewardSessionService(this, areaManager, rewardService, () -> config, householdManager);
 
 
         areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService, rewardSessionService);

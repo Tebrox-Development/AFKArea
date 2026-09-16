@@ -57,6 +57,7 @@ public final class HouseholdManager {
             boolean conflict = members.stream().anyMatch(householdByMember::containsKey);
             if(conflict) {
                 plugin.getLogger().warning("Skipping household '" + id + "' because at least one player already belongs to another household");
+                continue;
             }
 
             HouseholdData household = new HouseholdData(id, toStrings(members));

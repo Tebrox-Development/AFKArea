@@ -3,6 +3,7 @@ package de.tebrox.afkarea.reward;
 import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.area.AreaManager;
 import de.tebrox.afkarea.config.AFKAreaConfig;
+import de.tebrox.afkarea.household.HouseholdManager;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
 import de.tebrox.afkarea.reward.data.RewardMilestoneData;
 import org.bukkit.entity.Player;
@@ -24,14 +25,16 @@ public final class RewardSessionService {
 
     private static final String IP_LIMIT_BYPASS_PERMISSION = "afkarea.bypass.ip-limit";
     private final Supplier<AFKAreaConfig> config;
+    private final HouseholdManager householdManager;
 
     private BukkitTask task;
 
-    public RewardSessionService(JavaPlugin plugin, AreaManager areaManager, RewardService rewardService, Supplier<AFKAreaConfig> config) {
+    public RewardSessionService(JavaPlugin plugin, AreaManager areaManager, RewardService rewardService, Supplier<AFKAreaConfig> config, HouseholdManager householdManager) {
         this.plugin = plugin;
         this.areaManager = areaManager;
         this.rewardService = rewardService;
         this.config = config;
+        this.householdManager = householdManager;
     }
 
     public void start() {
@@ -145,9 +148,10 @@ public final class RewardSessionService {
         InetAddress address = addressOf(player);
         if(address == null) return true;
 
-        List<Map.Entry<UUID, Session>> candidates = new ArrayList<>();
+        Map<String, Long> identities = new HashMap<>();
         for(Map.Entry<UUID, Session> entry : sessions.entrySet()) {
-            Player other = plugin.getServer().getPlayer(entry.getKey());
+            UUID playerId = entry.getKey();
+            Player other = plugin.getServer().getPlayer(playerId);
 
             if(other == null || !other.isOnline()) continue;
             if(other.hasPermission(IP_LIMIT_BYPASS_PERMISSION)) continue;
@@ -158,13 +162,16 @@ public final class RewardSessionService {
             AreaData otherArea = areaManager.getArea(entry.getValue().areaId);
             if(!rewardService.hasEligibleReward(other, otherArea)) continue;
 
-            candidates.add(entry);
+            String identity = householdManager.householdIdentity(playerId);
+            identities.merge(identity, entry.getValue().startedAt, Math::min);
         }
 
-        candidates.sort(Comparator.<Map.Entry<UUID, Session>> comparingLong(entry -> entry.getValue().startedAt).thenComparing(entry -> entry.getKey().toString()));
+        List<Map.Entry<String, Long>> candidates = new ArrayList<>(identities.entrySet());
+        candidates.sort(Map.Entry.<String, Long> comparingByValue().thenComparing(Map.Entry::getKey));
+        String playerIdentity = householdManager.householdIdentity(player.getUniqueId());
 
         for(int index = 0; index < candidates.size(); index++) {
-            if(candidates.get(index).getKey().equals(player.getUniqueId())) return index < limit;
+            if(candidates.get(index).getKey().equals(playerIdentity)) return index < limit;
         }
 
         return false;
