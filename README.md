@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="docs/assets/afkarea-banner.jpg" alt="AFKArea">
+</p>
+
 <h1 align="center">AFKArea</h1>
 
 <p align="center">
