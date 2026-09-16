@@ -51,6 +51,25 @@ public final class RewardService {
         return selected;
     }
 
+    public boolean hasEligibleReward(Player player, AreaData area) {
+        if(player == null || area == null) return false;
+        if(player.hasPermission(BYPASS_PERMISSION)) return false;
+
+        RewardConfigData config = area.getRewards();
+        if(config == null || config.getRewards() == null) return false;
+
+        for(CommandRewardData reward : config.getRewards()) {
+            if(reward == null || !reward.isEnabled()) continue;
+            double weight = reward.getWeight();
+
+            if(!Double.isFinite(weight) || weight <= 0.0) continue;
+
+            if(canReceive(player, reward)) return true;
+        }
+
+        return false;
+    }
+
     private boolean canReceive(Player player, CommandRewardData reward) {
         String permission = reward.getPermission();
 
@@ -104,7 +123,7 @@ public final class RewardService {
 
     private void sendRewardMessage(Player player, AreaData area, RewardConfigData config, CommandRewardData reward) {
         String message = resolveRewardMessage(config, reward);
-        messageService.send(player, message, Placeholder.unparsed("player", player.getName()), Placeholder.unparsed("area", area.getUniqueId()), Placeholder.unparsed("reward", reward.getId() == null ? "" : reward.getId()));
+        messageService.send(player, message, Placeholder.unparsed("player", player.getName()), Placeholder.unparsed("area", area.getUniqueId()), Placeholder.unparsed("area_name", displayName(area)), Placeholder.unparsed("reward", reward.getId() == null ? "" : reward.getId()));
     }
 
     private String resolveRewardMessage(RewardConfigData config, CommandRewardData reward) {

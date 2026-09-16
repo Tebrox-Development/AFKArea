@@ -2,14 +2,18 @@ package de.tebrox.afkarea.reward;
 
 import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.area.AreaManager;
+import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
 import de.tebrox.afkarea.reward.data.RewardMilestoneData;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
 
 public final class RewardSessionService {
     private final JavaPlugin plugin;
@@ -18,12 +22,16 @@ public final class RewardSessionService {
 
     private final Map<UUID, Session> sessions = new HashMap<>();
 
+    private static final String IP_LIMIT_BYPASS_PERMISSION = "afkarea.bypass.ip-limit";
+    private final Supplier<AFKAreaConfig> config;
+
     private BukkitTask task;
 
-    public RewardSessionService(JavaPlugin plugin, AreaManager areaManager, RewardService rewardService) {
+    public RewardSessionService(JavaPlugin plugin, AreaManager areaManager, RewardService rewardService, Supplier<AFKAreaConfig> config) {
         this.plugin = plugin;
         this.areaManager = areaManager;
         this.rewardService = rewardService;
+        this.config = config;
     }
 
     public void start() {
@@ -98,8 +106,8 @@ public final class RewardSessionService {
         long reference = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
 
         if(now - reference < intervalNanos) return;
-        session .lastRewardAt = now;
-        rewardService.grant(player, area, config.getRolls());
+        session.lastRewardAt = now;
+        if(canRewardByIpLimit(player)) rewardService.grant(player, area, config.getRolls());
     }
 
     private void tickMilestones(Player player, AreaData area, RewardConfigData config, Session session, long now) {
@@ -120,10 +128,52 @@ public final class RewardSessionService {
             if(elapsed < required) continue;
 
             session.completedMilestones.add(index);
-            rewardService.grant(player, area, milestone.getRolls());
+            if(canRewardByIpLimit(player)) rewardService.grant(player, area, milestone.getRolls());
 
             if(sessions.get(player.getUniqueId()) != session) break;
         }
+    }
+
+    private boolean canRewardByIpLimit(Player player) {
+        if(player.hasPermission(IP_LIMIT_BYPASS_PERMISSION)) return true;
+
+        int limit = config.get().maxRewardingPlayersPerIp;
+
+        if(limit == -1) return true;
+        if(limit <= 0) return false;
+
+        InetAddress address = addressOf(player);
+        if(address == null) return true;
+
+        List<Map.Entry<UUID, Session>> candidates = new ArrayList<>();
+        for(Map.Entry<UUID, Session> entry : sessions.entrySet()) {
+            Player other = plugin.getServer().getPlayer(entry.getKey());
+
+            if(other == null || !other.isOnline()) continue;
+            if(other.hasPermission(IP_LIMIT_BYPASS_PERMISSION)) continue;
+
+            InetAddress otherAddress = addressOf(other);
+            if(!address.equals(otherAddress)) continue;
+
+            AreaData otherArea = areaManager.getArea(entry.getValue().areaId);
+            if(!rewardService.hasEligibleReward(other, otherArea)) continue;
+
+            candidates.add(entry);
+        }
+
+        candidates.sort(Comparator.<Map.Entry<UUID, Session>> comparingLong(entry -> entry.getValue().startedAt).thenComparing(entry -> entry.getKey().toString()));
+
+        for(int index = 0; index < candidates.size(); index++) {
+            if(candidates.get(index).getKey().equals(player.getUniqueId())) return index < limit;
+        }
+
+        return false;
+    }
+
+    private InetAddress addressOf(Player player) {
+        InetSocketAddress address = player.getAddress();
+
+        return address == null ? null : address.getAddress();
     }
 
     private static final class Session {
