@@ -17,10 +17,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 import de.tebrox.afkarea.household.HouseholdManager;
 
@@ -589,6 +586,71 @@ public final class AFKAreaCommands {
         );
     }
 
+    @VSub("afkarea household info")
+    @VDesc("Show the household of a player")
+    @VPerm("afkarea.admin.household")
+    public void householdInfo(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if (args.length < 1) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdInfoUsage);
+            return;
+        }
+
+        if (!plugin.householdManager().isLoaded()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdDataLoading);
+            return;
+        }
+
+        String input = args[0];
+        OfflinePlayer player = findKnownPlayer(input);
+
+        if (player == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdUnknownPlayer, Placeholder.unparsed("player", input));
+            return;
+        }
+
+        Set<UUID> members = plugin.householdManager().membersOf(player.getUniqueId());
+        String name = player.getName() == null ? input : player.getName();
+
+        if (members.isEmpty()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdNotLinked, Placeholder.unparsed("player", name)
+            );
+
+            return;
+        }
+
+        List<String> names = members.stream().map(this::displayPlayerName).sorted(String.CASE_INSENSITIVE_ORDER).toList();
+        plugin.messageService().send(ctx.sender(), plugin.messages().householdInfo, Placeholder.unparsed("player", name), Placeholder.unparsed("members", String.join(", ", names))
+        );
+    }
+
+    @VSub("afkarea household list")
+    @VDesc("List all configured households")
+    @VPerm("afkarea.admin.household")
+    public void householdList(CommandContext ctx) {
+        if (!plugin.householdManager().isLoaded()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdDataLoading);
+            return;
+        }
+
+        List<Set<UUID>> groups = plugin.householdManager().getMemberGroups();
+        if (groups.isEmpty()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().householdListEmpty);
+            return;
+        }
+
+        List<String> entries = new ArrayList<>();
+        for (Set<UUID> group : groups) {
+            List<String> names = group.stream().map(this::displayPlayerName).sorted(String.CASE_INSENSITIVE_ORDER).toList();
+            entries.add("- " + String.join(", ", names));
+        }
+
+        entries.sort(String.CASE_INSENSITIVE_ORDER);
+        plugin.messageService().send(ctx.sender(), plugin.messages().householdList, Placeholder.unparsed("count", Integer.toString(groups.size())), Placeholder.unparsed("households", String.join("\n", entries))
+        );
+    }
+
     private OfflinePlayer findKnownPlayer(String name) {
         Player online = Bukkit.getPlayerExact(name);
         if(online != null) return online;
@@ -600,6 +662,13 @@ public final class AFKAreaCommands {
         }
 
         return null;
+    }
+
+    private String displayPlayerName(UUID playerId) {
+        OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
+        String name = player.getName();
+
+        return name == null ? playerId.toString() : name;
     }
 
     private String describeRegion(AreaData area) {

@@ -2,7 +2,6 @@ package de.tebrox.afkarea.household;
 
 import de.tebrox.vertexCore.database.Database;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.checkerframework.checker.units.qual.C;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -66,10 +65,10 @@ public final class HouseholdManager {
             for(UUID member : members) {
                 householdByMember.put(member, id);
             }
-            loaded = true;
-
-            plugin.getLogger().info("Loaded " + households.size() + " household" + (households.size() == 1 ? "" : "s"));
         }
+
+        loaded = true;
+        plugin.getLogger().info("Loaded " + households.size() + " household" + (households.size() == 1 ? "" : "s"));
     }
 
     public void link(UUID first, UUID second, Consumer<LinkResult> onResult, Consumer<Throwable> onError) {
@@ -306,6 +305,14 @@ public final class HouseholdManager {
         return result;
     }
 
+    public List<Set<UUID>> getMemberGroups() {
+        List<Set<UUID>> groups = new ArrayList<>();
+
+        for(HouseholdData household : households.values()) {
+            groups.add(Set.copyOf(parseMembers(household)));
+        }
+        return List.copyOf(groups);
+    }
 
     public enum LinkResult {
         LINKED,

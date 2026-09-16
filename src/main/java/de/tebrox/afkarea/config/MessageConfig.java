@@ -173,4 +173,16 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("household.save-failed")
     public String householdSaveFailed = "<red>Failed to update household data. Check the server console.</red>";
+
+    @ConfigKey("household.info-usage")
+    public String householdInfoUsage = "<red>Usage: /afkarea household info <player></red>";
+
+    @ConfigKey("household.info")
+    public String householdInfo = "<gray>Household of <white><player></white>: <aqua><members></aqua></gray>";
+
+    @ConfigKey("household.list-empty")
+    public String householdListEmpty = "<yellow>No households are configured.</yellow>";
+
+    @ConfigKey("household.list")
+    public String householdList = "<gray>Households (<white><count></white>):\n<households></gray>";
 }
