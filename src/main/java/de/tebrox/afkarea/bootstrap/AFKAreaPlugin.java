@@ -14,6 +14,7 @@ import de.tebrox.afkarea.display.AreaVisibilityService;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.household.HouseholdData;
 import de.tebrox.afkarea.household.HouseholdManager;
+import de.tebrox.afkarea.integration.WorldGuardIntegration;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.persistence.AFKAreaDatabaseSettings;
 import de.tebrox.afkarea.reward.RewardService;
@@ -59,8 +60,18 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private Database<HouseholdData> householdDatabase;
     private HouseholdManager householdManager;
 
+    private WorldGuardIntegration worldGuardIntegration;
+
     @Override
     public void onEnable() {
+        worldGuardIntegration = WorldGuardIntegration.detect(this);
+
+        if(worldGuardIntegration.isAvailable()) {
+            getLogger().info("WorldGuard integration is available");
+        }else{
+            getLogger().info("WorldGuard not found - Worldguard integration is disabled");
+        }
+
         configFile = new Config<>(this, AFKAreaConfig.class);
         config = configFile.loadConfigObject();
 
@@ -149,6 +160,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         idleTracker.resetAutoTeleportAttempts();
     }
 
+    public WorldGuardIntegration worldGuardIntegration() { return worldGuardIntegration; }
     public AFKAreaConfig config() { return config; }
     public MessageConfig messages() { return messages; }
     public MessageService messageService() { return messageService; }
