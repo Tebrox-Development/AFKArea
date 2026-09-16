@@ -16,7 +16,7 @@ public final class WorldGuardRegionProvider implements RegionProvider {
     private final String regionId;
     private final boolean includeChildren;
 
-    public WorldGuardIntegration(WorldGuardIntegration integration, String worldName, String regionId) {
+    public WorldGuardRegionProvider(WorldGuardIntegration integration, String worldName, String regionId) {
         this(integration, worldName, regionId, false);
     }
 

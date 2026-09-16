@@ -6,7 +6,7 @@ public final class WorldGuardRegionData {
     private boolean includeChildren;
 
     public WorldGuardRegionData(String world, String regionId) {
-        this(world, regionId, false)
+        this(world, regionId, false);
     }
 
     public WorldGuardRegionData(String world, String regionId, boolean includeChildren) {
