@@ -78,7 +78,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
         householdDatabase = new Database<>(this, databaseSettings, HouseholdData.class);
-        areaManager = new AreaManager(this, areaDatabase);
+        areaManager = new AreaManager(this, areaDatabase, worldGuardIntegration);
         householdManager = new HouseholdManager(this, householdDatabase);
         areaTeleportService = new AreaTeleportService(areaManager);
 

@@ -1,7 +1,10 @@
 package de.tebrox.afkarea.area;
 
+import de.tebrox.afkarea.integration.WorldGuardIntegration;
 import de.tebrox.afkarea.region.CuboidRegionProvider;
 import de.tebrox.afkarea.region.RegionProvider;
+import de.tebrox.afkarea.region.WorldGuardRegionProvider;
+import de.tebrox.afkarea.region.data.WorldGuardRegionData;
 import de.tebrox.vertexCore.database.Database;
 import org.bukkit.Location;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -12,6 +15,7 @@ import java.util.function.Consumer;
 public final class AreaManager {
     private final JavaPlugin plugin;
     private final Database<AreaData> database;
+    private final WorldGuardIntegration worldGuardIntegration;
 
     private final Map<String, AreaData> areas = new HashMap<>();
     private final List<RuntimeArea> runtimeAreas = new ArrayList<>();
@@ -19,9 +23,10 @@ public final class AreaManager {
     private boolean loaded;
     private Runnable runtimeChangeListener = () -> {};
 
-    public AreaManager(JavaPlugin plugin, Database<AreaData> database) {
+    public AreaManager(JavaPlugin plugin, Database<AreaData> database, WorldGuardIntegration worldGuardIntegration) {
         this.plugin = plugin;
         this.database = database;
+        this.worldGuardIntegration = worldGuardIntegration;
     }
 
     public void loadAsync(){
@@ -161,6 +166,27 @@ public final class AreaManager {
             }
 
             return new CuboidRegionProvider(area.getCuboidRegion());
+        }
+
+        if(regionType.equalsIgnoreCase("worldguard")) {
+            if(!worldGuardIntegration.isAvailable()) {
+                plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' uses WorldGuard but WorldGuard is unavailable");
+                return null;
+            }
+
+            WorldGuardRegionData region = area.getWorldGuardRegion();
+
+            if(region == null) {
+                plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' uses WorldGuard but has no WorldGuard region data");
+                return null;
+            }
+
+            if(region.getWorld() == null || region.getWorld().isBlank()) {
+                plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' has invalid WorldGuard region data");
+                return null;
+            }
+
+            return new WorldGuardRegionProvider(worldGuardIntegration, region.getWorld(), region.getRegionId());
         }
 
         plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' uses unsupported region type '" + regionType + "'");

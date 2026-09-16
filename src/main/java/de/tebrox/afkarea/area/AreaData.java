@@ -1,6 +1,7 @@
 package de.tebrox.afkarea.area;
 
 import de.tebrox.afkarea.region.data.CuboidRegionData;
+import de.tebrox.afkarea.region.data.WorldGuardRegionData;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
 import de.tebrox.vertexCore.database.DataObject;
 import de.tebrox.vertexCore.database.annotation.DbExpose;
@@ -13,6 +14,7 @@ public final class AreaData implements DataObject {
     @DbExpose private int priority = 0;
     @DbExpose private String regionType;
     @DbExpose private CuboidRegionData cuboidRegion;
+    @DbExpose private WorldGuardRegionData worldGuardRegion;
     @DbExpose private TeleportData teleport;
     @DbExpose private RewardConfigData rewards;
 
@@ -72,6 +74,10 @@ public final class AreaData implements DataObject {
     public void setCuboidRegion(CuboidRegionData cuboidRegion) {
         this.cuboidRegion = cuboidRegion;
     }
+
+    public WorldGuardRegionData getWorldGuardRegion() { return worldGuardRegion; }
+
+    public void setWorldGuardRegion(WorldGuardRegionData worldGuardRegion) { this.worldGuardRegion = worldGuardRegion; }
 
     public TeleportData getTeleport() {
         return teleport;
