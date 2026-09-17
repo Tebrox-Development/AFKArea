@@ -228,4 +228,7 @@ public final class MessageConfig implements ConfigObject {
                     + "Reward session: <white><session></white>\n"
                     + "Next reward: <white><next_reward></white>\n"
                     + "IP reward slots: <white><ip_slots></white></gray>";
+
+    @ConfigKey("reload.failed")
+    public String reloadFailed = "<red>AFKArea configuration could not be reloaded. The previous configuration remains active. Check the server console.</red>";
 }

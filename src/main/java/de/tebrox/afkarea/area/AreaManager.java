@@ -5,6 +5,7 @@ import de.tebrox.afkarea.region.CuboidRegionProvider;
 import de.tebrox.afkarea.region.RegionProvider;
 import de.tebrox.afkarea.region.WorldGuardRegionProvider;
 import de.tebrox.afkarea.region.data.WorldGuardRegionData;
+import de.tebrox.afkarea.reward.RewardConfigValidator;
 import de.tebrox.vertexCore.database.Database;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -141,6 +142,10 @@ public final class AreaManager {
             RegionProvider provider = createRegionProvider(area);
 
             if(provider == null) continue;
+
+            for(String warning : RewardConfigValidator.validate(area.getRewards())) {
+                plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' reward configuration: " + warning);
+            }
 
             runtimeAreas.add(new RuntimeArea(area, provider));
         }

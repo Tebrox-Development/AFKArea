@@ -8,6 +8,8 @@ import de.tebrox.afkarea.area.selection.SelectionService;
 import de.tebrox.afkarea.command.AFKAreaCommands;
 import de.tebrox.afkarea.command.AfkCommand;
 import de.tebrox.afkarea.config.AFKAreaConfig;
+import de.tebrox.afkarea.config.AFKAreaConfigValidator;
+import de.tebrox.afkarea.config.ConfigValidationResult;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.display.AreaVisibilityListener;
 import de.tebrox.afkarea.display.AreaVisibilityService;
@@ -35,6 +37,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     private Config<AFKAreaConfig> configFile;
     private AFKAreaConfig config;
+    private DatabaseConfigSnapshot activeDatabaseConfig;
 
     private Config<MessageConfig> messageFile;
     private MessageConfig messages;
@@ -77,7 +80,19 @@ public final class AFKAreaPlugin extends JavaPlugin {
         }
 
         configFile = new Config<>(this, AFKAreaConfig.class);
-        config = configFile.loadConfigObject();
+        AFKAreaConfig loadedConfig;
+
+        try {
+            loadedConfig = configFile.loadConfigObject();
+        }catch(RuntimeException exception) {
+            getLogger().severe("Failed to load config.yml: " + exception.getMessage());
+            throw exception;
+        }
+        if(!validateConfiguration(loadedConfig)) {
+            throw new IllegalStateException("AFKArea configuration is invalid. Check the previous log messages.");
+        }
+        config = loadedConfig;
+        activeDatabaseConfig = DatabaseConfigSnapshot.from(config);
 
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
@@ -156,9 +171,28 @@ public final class AFKAreaPlugin extends JavaPlugin {
         getLogger().info("AFKArea has been disabled");
     }
 
-    public void reloadConfigs() {
-        config = configFile.loadConfigObject();
-        messages = messageFile.loadConfigObject();
+    public boolean reloadConfigs() {
+        AFKAreaConfig reloadedConfig;
+        MessageConfig reloadedMessages;
+
+        try {
+            reloadedConfig = configFile.loadConfigObject();
+            reloadedMessages = messageFile.loadConfigObject();
+        }catch(RuntimeException exception) {
+            getLogger().severe("Failed to reload AFKArea configuration: " + exception.getMessage());
+            return false;
+        }
+
+        if(!validateConfiguration(reloadedConfig)) {
+            getLogger().severe("Configuration reload rejected. The previous configuration remains active.");
+            return false;
+        }
+
+        boolean databaseConfigChanged = !activeDatabaseConfig.equals(DatabaseConfigSnapshot.from(reloadedConfig));
+        if(databaseConfigChanged) getLogger().warning("Database configuration changed during reload. Database settings are initialized at startup and the changes will take effect after a server restart.");
+
+        config = reloadedConfig;
+        messages = reloadedMessages;
 
         visibilityService.refreshAll(getServer().getOnlinePlayers());
 
@@ -169,6 +203,28 @@ public final class AFKAreaPlugin extends JavaPlugin {
                 .forEach(tabListService::refreshAfk);
 
         idleTracker.resetAutoTeleportAttempts();
+
+        return true;
+    }
+
+    private boolean validateConfiguration(AFKAreaConfig candidate) {
+        ConfigValidationResult result = AFKAreaConfigValidator.validate(candidate);
+
+        for(String warning : result.warnings()) {
+            getLogger().warning("Configuration warning: " + warning);
+        }
+
+        for(String error : result.errors()) {
+            getLogger().severe("Configuration error: " + error);
+        }
+
+        return result.isValid();
+    }
+
+    private record DatabaseConfigSnapshot(String backend, boolean useQueue, long timeoutMillis, int poolSize, String tablePrefix, String mysqlUrl, String mysqlUser, String mysqlPassword) {
+        static DatabaseConfigSnapshot from(AFKAreaConfig config) {
+            return new DatabaseConfigSnapshot(config.databaseBackend, config.databaseUseQueue, config.databaseTimeoutMillis, config.databasePoolSize, config.databaseTablePrefix, config.databaseMysqlUrl, config.databaseMysqlUser, config.databaseMysqlPassword);
+        }
     }
 
     public WorldGuardIntegration worldGuardIntegration() { return worldGuardIntegration; }

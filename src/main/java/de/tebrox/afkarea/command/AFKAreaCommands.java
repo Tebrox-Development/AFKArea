@@ -58,9 +58,11 @@ public final class AFKAreaCommands {
     @VDesc("Reload AFKArea configuration")
     @VPerm("afkarea.admin.reload")
     public void reload(CommandContext ctx) {
-        plugin.reloadConfigs();
-
-        plugin.messageService().send(ctx.sender(), plugin.messages().reloadSuccess);
+        if(plugin.reloadConfigs()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().reloadSuccess);
+        }else{
+            plugin.messageService().send(ctx.sender(), plugin.messages().reloadFailed);
+        }
     }
 
     @VSub("afkarea pos1")
