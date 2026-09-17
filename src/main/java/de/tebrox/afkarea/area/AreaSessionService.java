@@ -112,14 +112,14 @@ public final class AreaSessionService {
 
     public void clear(UUID playerId) {
         currentAreas.remove(playerId);
-        rewardSessionService.clear(playerId);
+        entrySources.remove(playerId);
         pendingEntrySources.remove(playerId);
         rewardSessionService.clear(playerId);
     }
 
     public void clearAll() {
         currentAreas.clear();
-        rewardSessionService.clearAll();
+        entrySources.clear();
         pendingEntrySources.clear();
         rewardSessionService.clearAll();
     }
