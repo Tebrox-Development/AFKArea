@@ -582,6 +582,42 @@ public final class AFKAreaCommands {
         );
     }
 
+    @VSub("afkarea setpriority")
+    @VDesc("Set the priority of an AFK area")
+    @VPerm("afkarea.admin.setpriority")
+    public void setPriority(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaSetPriorityUsage);
+            return;
+        }
+
+        String id = args[0];
+        AreaData current = plugin.areaManager().getArea(id);
+        if(current == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        int priority;
+        try {
+            priority = Integer.parseInt(args[1]);
+        }catch(NumberFormatException exception) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaInvalidPriority);
+            return;
+        }
+
+        AreaData updated = current.copy();
+        updated.setPriority(priority);
+        plugin.areaManager().saveArea(updated,
+                () -> plugin.messageService().send(ctx.sender(), plugin.messages().areaPrioritySet, Placeholder.unparsed("area", id), Placeholder.unparsed("priority", Integer.toString(priority))),
+                error -> {
+            plugin.getLogger().severe("Failed to update priority for AFK area '" + id + "': " + error.getMessage());
+            error.printStackTrace();
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
+                });
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm("afkarea.admin.household")
@@ -884,5 +920,10 @@ public final class AFKAreaCommands {
         String normalized = token.toLowerCase(Locale.ROOT);
 
         return plugin.areaManager().getAreas().stream().filter(area -> "worldguard".equalsIgnoreCase(area.getRegionType())).map(AreaData::getUniqueId).filter(id -> id != null && !id.isBlank()).filter(id -> id.toLowerCase(Locale.ROOT).startsWith(normalized)).sorted(String.CASE_INSENSITIVE_ORDER).toList();
+    }
+
+    @VSuggest("arkarea setpriority")
+    public List<String> setPrioritySuggest(CommandSender sender, String alias, String[] args) {
+        return suggestAreaIds(sender, args, "afkarea.admin.setpriority");
     }
 }

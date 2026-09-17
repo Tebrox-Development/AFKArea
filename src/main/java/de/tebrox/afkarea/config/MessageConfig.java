@@ -203,4 +203,13 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("integrations.worldguard-region-not-found")
     public String worldGuardRegionNotFound = "<red>WorldGuard region '<region>' does not exist in world '<world>'.</red>";
+
+    @ConfigKey("area.setpriority-usage")
+    public String areaSetPriorityUsage = "<red>Usage: /afkarea setpriority <id> <priority></red>";
+
+    @ConfigKey("area.invalid-priority")
+    public String areaInvalidPriority = "<red>Priority must be a whole number.</red>";
+
+    @ConfigKey("area.priority-set")
+    public String areaPrioritySet = "<green>Priority for AFK area '<area>' was set to <priority>.</green>";
 }
