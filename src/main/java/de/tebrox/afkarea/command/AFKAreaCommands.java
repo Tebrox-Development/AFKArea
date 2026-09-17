@@ -895,7 +895,7 @@ public final class AFKAreaCommands {
         long minutes = (seconds % 3600) / 60;
         long secs = seconds % 60;
 
-        return String.format(Locale.ROOT, "%02d:02d:02d", hours, minutes, secs);
+        return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, secs);
     }
 
     private String formatIpSlots(RewardSessionService.IpRewardStatus status) {

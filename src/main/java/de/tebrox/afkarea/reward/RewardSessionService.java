@@ -233,11 +233,10 @@ public final class RewardSessionService {
 
                 long remaining = TimeUnit.SECONDS.toNanos(milestone.getAfterSeconds()) - elapsed;
                 nearest = Math.min(nearest, Math.max(0L, remaining));
-
-                if(nearest == Long.MAX_VALUE) return OptionalLong.empty();
-
-                return OptionalLong.of(TimeUnit.NANOSECONDS.toSeconds(nearest));
             }
+            if(nearest == Long.MAX_VALUE) return OptionalLong.empty();
+
+            return OptionalLong.of(TimeUnit.NANOSECONDS.toSeconds(nearest));
         }
         return OptionalLong.empty();
     }
