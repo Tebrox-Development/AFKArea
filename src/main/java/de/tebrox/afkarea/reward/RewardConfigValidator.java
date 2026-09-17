@@ -34,13 +34,13 @@ public final class RewardConfigValidator {
                 for(int index = 0; index < milestones.size(); index++) {
                     RewardMilestoneData milestone = milestones.get(index);
 
-                    if(milestones == null) {
+                    if(milestone == null) {
                         warnings.add("milestone #" + index + " is null");
                         continue;
                     }
 
-                    if(milestone.getAfterSeconds() <= 0) warnings.add("milestone #" + index + " must have afterSeconds greater 0.");
-                    if(milestone.getRolls() <= 0) warnings.add("milestone #" + index + " must have rolls greater 0.");
+                    if(milestone.getAfterSeconds() <= 0) warnings.add("milestone #" + index + " must have afterSeconds greater than 0.");
+                    if(milestone.getRolls() <= 0) warnings.add("milestone #" + index + " must have rolls greater than 0.");
                 }
             }
         }
@@ -56,7 +56,7 @@ public final class RewardConfigValidator {
 
             String id = reward.getId();
             if(id == null || id.isBlank()) warnings.add("an enabled reward has no ID.");
-            if(!Double.isFinite(reward.getWeight()) || reward.getWeight() <= 0.0) warnings.add("reward '" + displayId(reward) + "' has an invalid weight an will not be selected.");
+            if(!Double.isFinite(reward.getWeight()) || reward.getWeight() <= 0.0) warnings.add("reward '" + displayId(reward) + "' has an invalid weight and will not be selected.");
             if(reward.getCommands() == null || reward.getCommands().stream().noneMatch(command -> command != null && !command.isBlank())) warnings.add("reward '" + displayId(reward) + "' contains no executable commands.");
         }
 
