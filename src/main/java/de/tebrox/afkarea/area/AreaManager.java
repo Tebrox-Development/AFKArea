@@ -7,6 +7,7 @@ import de.tebrox.afkarea.region.WorldGuardRegionProvider;
 import de.tebrox.afkarea.region.data.WorldGuardRegionData;
 import de.tebrox.vertexCore.database.Database;
 import org.bukkit.Location;
+import org.bukkit.World;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.*;
@@ -186,7 +187,13 @@ public final class AreaManager {
                 return null;
             }
 
-            return new WorldGuardRegionProvider(worldGuardIntegration, region.getWorld(), region.getRegionId(), region.isIncludeChildren());
+            WorldGuardRegionProvider provider = new WorldGuardRegionProvider(worldGuardIntegration, region.getWorld(), region.getRegionId(), region.isIncludeChildren());
+            if(!provider.exists()) {
+                plugin.getLogger().warning("Skipping AFK area '" + area.getUniqueId() + "': WorldGuard region '" + region.getRegionId() + "' does not exist in world '" + region.getWorld() + "'");
+                return null;
+            }
+
+            return provider;
         }
 
         plugin.getLogger().warning("AFK area '" + area.getUniqueId() + "' uses unsupported region type '" + regionType + "'");
@@ -201,5 +208,10 @@ public final class AreaManager {
         }
 
         return Optional.empty();
+    }
+
+    public boolean worldGuardRegionExists(String worldName, String regionId) {
+        if(!worldGuardIntegration.isAvailable()) return false;
+        return new WorldGuardRegionProvider(worldGuardIntegration, worldName, regionId).exists();
     }
 }

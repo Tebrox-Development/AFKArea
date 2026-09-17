@@ -161,6 +161,14 @@ public final class AFKAreaCommands {
                 return;
             }
 
+            String regionId = args[2];
+            String worldName = player.getWorld().getName();
+
+            if(!plugin.areaManager().worldGuardRegionExists(worldName, regionId)) {
+                plugin.messageService().send(player, plugin.messages().worldGuardRegionNotFound, Placeholder.unparsed("region", regionId), Placeholder.unparsed("world", worldName));
+                return;
+            }
+
             createWorldGuardArea(player, id, args[2]);
             return;
         }
@@ -201,10 +209,16 @@ public final class AFKAreaCommands {
             return;
         }
 
+        String worldName = player.getWorld().getName();
+        if(!plugin.areaManager().worldGuardRegionExists(worldName, regionId)) {
+            plugin.messageService().send(player, plugin.messages().worldGuardRegionNotFound, Placeholder.unparsed("region", regionId), Placeholder.unparsed("world", worldName));
+            return;
+        }
+
         WorldGuardRegionData currentRegion = current.getWorldGuardRegion();
         boolean includeChildren = currentRegion != null && currentRegion.isIncludeChildren();
 
-        WorldGuardRegionData region = new WorldGuardRegionData(player.getWorld().getName(), regionId, includeChildren);
+        WorldGuardRegionData region = new WorldGuardRegionData(worldName, regionId, includeChildren);
         AreaData updated = current.copy();
         updated.setWorldGuardRegion(region);
 
@@ -860,7 +874,7 @@ public final class AFKAreaCommands {
         return suggestAreaIds(sender, args, "afkarea.admin.info");
     }
 
-    @VSuggest("arkarea setregion")
+    @VSuggest("afkarea setregion")
     public List<String> setRegionSuggest(CommandSender sender, String alias, String[] args) {
         if(!sender.hasPermission("afkarea.admin.setregion")) return List.of();
         if(!plugin.worldGuardIntegration().isAvailable()) return List.of();

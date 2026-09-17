@@ -200,4 +200,7 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.region-set")
     public String areaRegionSet = "<green>WorldGuard region for AFK area '<area>' was set to '<region>' in world '<world>'.</green>";
+
+    @ConfigKey("integrations.worldguard-region-not-found")
+    public String worldGuardRegionNotFound = "<red>WorldGuard region '<region>' does not exist in world '<world>'.</red>";
 }

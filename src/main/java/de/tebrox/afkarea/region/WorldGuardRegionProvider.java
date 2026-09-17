@@ -8,7 +8,11 @@ import com.sk89q.worldguard.protection.managers.RegionManager;
 import com.sk89q.worldguard.protection.regions.ProtectedRegion;
 import com.sk89q.worldguard.protection.regions.RegionQuery;
 import de.tebrox.afkarea.integration.WorldGuardIntegration;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.World;
+
+import java.awt.*;
 
 public final class WorldGuardRegionProvider implements RegionProvider {
     private final WorldGuardIntegration integration;
@@ -49,6 +53,17 @@ public final class WorldGuardRegionProvider implements RegionProvider {
         }
 
         return false;
+    }
+
+    public boolean exists() {
+        if(!integration.isAvailable()) return false;
+        if(worldName == null || worldName.isBlank() || regionId == null || regionId.isBlank()) return false;
+
+        World world = Bukkit.getWorld(worldName);
+        if(world == null) return false;
+
+        RegionManager regionManager = WorldGuard.getInstance().getPlatform().getRegionContainer().get(BukkitAdapter.adapt(world));
+        return regionManager != null && regionManager.hasRegion(regionId);
     }
 
     public String worldName() {
