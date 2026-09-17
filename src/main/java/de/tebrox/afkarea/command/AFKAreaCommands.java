@@ -1,6 +1,7 @@
 package de.tebrox.afkarea.command;
 
 import de.tebrox.afkarea.area.AreaData;
+import de.tebrox.afkarea.area.AreaEntrySource;
 import de.tebrox.afkarea.area.AreaTeleportService;
 import de.tebrox.afkarea.area.TeleportData;
 import de.tebrox.afkarea.area.selection.CuboidSelection;
@@ -9,6 +10,8 @@ import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
 import de.tebrox.afkarea.region.WorldGuardRegionProvider;
 import de.tebrox.afkarea.region.data.CuboidRegionData;
 import de.tebrox.afkarea.region.data.WorldGuardRegionData;
+import de.tebrox.afkarea.reward.RewardSessionService;
+import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -618,6 +621,102 @@ public final class AFKAreaCommands {
                 });
     }
 
+    @VSub("afkarea status")
+    @VDesc("Show runtime AFK status for a player")
+    @VPerm("afkarea.admin.status")
+    public void status(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        Player target;
+
+        if (args.length >= 1) {
+            target = Bukkit.getPlayerExact(args[0]);
+
+            if (target == null) {
+                plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().statusPlayerNotOnline,
+                        Placeholder.unparsed("player", args[0])
+                );
+                return;
+            }
+        } else if (ctx.sender() instanceof Player player) {
+            target = player;
+        } else {
+            plugin.messageService().send(
+                    ctx.sender(),
+                    plugin.messages().statusUsage
+            );
+            return;
+        }
+
+        UUID playerId = target.getUniqueId();
+
+        PlayerState state =
+                plugin.playerStateService().getState(playerId);
+
+        String areaId =
+                plugin.areaSessionService().getAreaId(playerId);
+
+        AreaEntrySource entrySource =
+                plugin.areaSessionService()
+                        .getEntrySource(playerId);
+
+        long idleSeconds =
+                plugin.activityService()
+                        .getIdleDuration(playerId)
+                        .toSeconds();
+
+        OptionalLong session =
+                plugin.rewardSessionService()
+                        .getSessionSeconds(playerId);
+
+        OptionalLong nextReward =
+                plugin.rewardSessionService()
+                        .getNextRewardSeconds(playerId);
+
+        RewardSessionService.IpRewardStatus ipStatus =
+                plugin.rewardSessionService()
+                        .getIpRewardStatus(target);
+
+        plugin.messageService().send(
+                ctx.sender(),
+                plugin.messages().status,
+                Placeholder.unparsed("player", target.getName()),
+                Placeholder.unparsed("state", state.name()),
+                Placeholder.unparsed(
+                        "area",
+                        areaId == null ? "-" : areaId
+                ),
+                Placeholder.unparsed(
+                        "entry",
+                        entrySource == null
+                                ? "-"
+                                : entrySource.name()
+                ),
+                Placeholder.unparsed(
+                        "idle",
+                        formatDuration(idleSeconds)
+                ),
+                Placeholder.unparsed(
+                        "session",
+                        session.isPresent()
+                                ? formatDuration(session.getAsLong())
+                                : "-"
+                ),
+                Placeholder.unparsed(
+                        "next_reward",
+                        nextReward.isPresent()
+                                ? formatDuration(nextReward.getAsLong())
+                                : "-"
+                ),
+                Placeholder.unparsed(
+                        "ip_slots",
+                        formatIpSlots(ipStatus)
+                )
+        );
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm("afkarea.admin.household")
@@ -791,6 +890,23 @@ public final class AFKAreaCommands {
         return null;
     }
 
+    private String formatDuration(long seconds) {
+        long hours = seconds / 3600;
+        long minutes = (seconds % 3600) / 60;
+        long secs = seconds % 60;
+
+        return String.format(Locale.ROOT, "%02d:02d:02d", hours, minutes, secs);
+    }
+
+    private String formatIpSlots(RewardSessionService.IpRewardStatus status) {
+        return switch (status.mode()) {
+            case BYPASS -> "bypass";
+            case UNLIMITED -> "unlimited";
+            case ADDRESS_UNAVAILABLE -> "unavailable";
+            case LIMITED -> status.activeIdentities() + "/" + status.limit();
+        };
+    }
+
     private String displayPlayerName(UUID playerId) {
         OfflinePlayer player = Bukkit.getOfflinePlayer(playerId);
         String name = player.getName();
@@ -925,5 +1041,15 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea setpriority")
     public List<String> setPrioritySuggest(CommandSender sender, String alias, String[] args) {
         return suggestAreaIds(sender, args, "afkarea.admin.setpriority");
+    }
+
+    @VSuggest("afkarea status")
+    public List<String> statusSuggest(CommandSender sender, String alias, String[] args) {
+        if (!sender.hasPermission("afkarea.admin.status")) return List.of();
+        if (args.length > 2) return List.of();
+
+        String token = args.length >= 2 ? args[1].toLowerCase(Locale.ROOT) : "";
+
+        return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(token)).sorted(String.CASE_INSENSITIVE_ORDER).toList();
     }
 }

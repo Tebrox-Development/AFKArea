@@ -212,4 +212,20 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("area.priority-set")
     public String areaPrioritySet = "<green>Priority for AFK area '<area>' was set to <priority>.</green>";
+
+    @ConfigKey("status.usage")
+    public String statusUsage = "<red>Usage: /afkarea status [player]</red>";
+
+    @ConfigKey("status.player-not-online")
+    public String statusPlayerNotOnline = "<red>Player '<player>' is not online.</red>";
+
+    @ConfigKey("status.output")
+    public String status = "<gold>AFKArea status for <player></gold>\n"
+                    + "<gray>State: <white><state></white>\n"
+                    + "Area: <white><area></white>\n"
+                    + "Entry: <white><entry></white>\n"
+                    + "Idle time: <white><idle></white>\n"
+                    + "Reward session: <white><session></white>\n"
+                    + "Next reward: <white><next_reward></white>\n"
+                    + "IP reward slots: <white><ip_slots></white></gray>";
 }

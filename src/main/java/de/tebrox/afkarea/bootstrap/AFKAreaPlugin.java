@@ -111,7 +111,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         selectionService = new SelectionService();
         rewardSessionService.start();
 
-        idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService, areaTeleportService);
+        idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService, areaTeleportService, areaSessionService);
         idleTracker.start();
 
         getServer().getPluginManager().registerEvents(new ActivityListener(this, activityService, playerStateService, () -> messages, messageService, tabListService), this);

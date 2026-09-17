@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
 public final class AreaSessionService {
@@ -29,6 +30,11 @@ public final class AreaSessionService {
     private final RewardSessionService rewardSessionService;
 
     private final Map<UUID, String> currentAreas = new HashMap<>();
+
+    private final Map<UUID, AreaEntrySource> entrySources = new HashMap<>();
+    private final Map<UUID, PendingEntrySource> pendingEntrySources = new HashMap<>();
+
+    private static final long ENTRY_SOURCE_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(5);
 
     public AreaSessionService(AreaManager areaManager, PlayerStateService stateService, ActivityService activityService, TabListService tabListService, Supplier<MessageConfig> messages, MessageService messageService, AreaVisibilityService visibilityService, RewardSessionService rewardSessionService) {
         this.areaManager = areaManager;
@@ -75,6 +81,7 @@ public final class AreaSessionService {
         rewardSessionService.begin(player, area);
 
         visibilityService.refreshTarget(player);
+        entrySources.put(playerId, consumeEntrySource(playerId));
 
         messageService.send(player, messages.get().areaEntered, Placeholder.unparsed("area", displayName(area)));
     }
@@ -91,6 +98,8 @@ public final class AreaSessionService {
         activityService.recordActivity(playerId);
 
         AreaData previous = areaManager.getArea(areaId);
+
+        entrySources.remove(playerId);
 
         messageService.send(player, messages.get().areaLeft, Placeholder.unparsed("area", previous == null ? areaId : displayName(previous)));
     }
@@ -110,4 +119,26 @@ public final class AreaSessionService {
         currentAreas.clear();
         rewardSessionService.clearAll();
     }
+
+    public void markNextEntry(UUID playerId, AreaEntrySource source) {
+        pendingEntrySources.put(playerId, new PendingEntrySource(source, System.nanoTime()));
+    }
+
+    public void clearPendingEntry(UUID playerId) {
+        pendingEntrySources.remove(playerId);
+    }
+
+    public AreaEntrySource getEntrySource(UUID playerId) {
+        return entrySources.get(playerId);
+    }
+
+    private AreaEntrySource consumeEntrySource(UUID playerId) {
+        PendingEntrySource pending = pendingEntrySources.remove(playerId);
+
+        if(pending == null) return AreaEntrySource.MANUAL;
+        if(System.nanoTime() - pending.createdAt() > ENTRY_SOURCE_TIMEOUT_NANOS) return AreaEntrySource.MANUAL;
+        return pending.source;
+    }
+
+    private record PendingEntrySource(AreaEntrySource source, long createdAt) {}
 }

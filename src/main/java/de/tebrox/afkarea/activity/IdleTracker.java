@@ -1,5 +1,7 @@
 package de.tebrox.afkarea.activity;
 
+import de.tebrox.afkarea.area.AreaEntrySource;
+import de.tebrox.afkarea.area.AreaSessionService;
 import de.tebrox.afkarea.area.AreaTeleportService;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
@@ -27,6 +29,7 @@ public final class IdleTracker {
     private final MessageService messageService;
     private final TabListService tabListService;
     private final AreaTeleportService areaTeleportService;
+    private final AreaSessionService sessionService;
 
     private final Set<UUID> autoTeleportAttempts = new HashSet<>();
 
@@ -39,7 +42,7 @@ public final class IdleTracker {
             Supplier<AFKAreaConfig> config,
             Supplier<MessageConfig> messages,
             MessageService messageService,
-            TabListService tabListService, AreaTeleportService areaTeleportService
+            TabListService tabListService, AreaTeleportService areaTeleportService, AreaSessionService sessionService
     ) {
         this.plugin = plugin;
         this.activityService = activityService;
@@ -49,6 +52,7 @@ public final class IdleTracker {
         this.messageService = messageService;
         this.tabListService = tabListService;
         this.areaTeleportService = areaTeleportService;
+        this.sessionService = sessionService;
     }
 
     public void start() {
@@ -120,11 +124,12 @@ public final class IdleTracker {
             plugin.getLogger().warning("Automatic AFK teleport for player '" + player.getName() + "' failed: no target area is configured");
             return;
         }
-
+        sessionService.markNextEntry(playerId, AreaEntrySource.AUTOMATIC);
         AreaTeleportService.Result result = areaTeleportService.teleport(player, areaId, true);
 
         if(result != AreaTeleportService.Result.SUCCESS) {
             plugin.getLogger().warning("Automatic AFK teleport for player '" + player.getName() + "' to area '" + areaId + "' failed: " + result);
+            sessionService.clearPendingEntry(playerId);
         }
     }
 

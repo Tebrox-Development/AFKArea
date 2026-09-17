@@ -6,7 +6,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import java.util.Objects;
 
 public final class PlaceholderApiIntegration implements PluginIntegration {
-    private static final String PLUGIN_NAME = "PlaceholderApi";
+    private static final String PLUGIN_NAME = "PlaceholderAPI";
     private final Plugin plugin;
 
     public PlaceholderApiIntegration(Plugin plugin) {
