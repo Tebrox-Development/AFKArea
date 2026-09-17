@@ -922,7 +922,7 @@ public final class AFKAreaCommands {
         return plugin.areaManager().getAreas().stream().filter(area -> "worldguard".equalsIgnoreCase(area.getRegionType())).map(AreaData::getUniqueId).filter(id -> id != null && !id.isBlank()).filter(id -> id.toLowerCase(Locale.ROOT).startsWith(normalized)).sorted(String.CASE_INSENSITIVE_ORDER).toList();
     }
 
-    @VSuggest("arkarea setpriority")
+    @VSuggest("afkarea setpriority")
     public List<String> setPrioritySuggest(CommandSender sender, String alias, String[] args) {
         return suggestAreaIds(sender, args, "afkarea.admin.setpriority");
     }

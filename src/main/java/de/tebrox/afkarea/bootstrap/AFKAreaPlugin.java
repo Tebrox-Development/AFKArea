@@ -14,7 +14,9 @@ import de.tebrox.afkarea.display.AreaVisibilityService;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.household.HouseholdData;
 import de.tebrox.afkarea.household.HouseholdManager;
+import de.tebrox.afkarea.integration.PlaceholderApiIntegration;
 import de.tebrox.afkarea.integration.WorldGuardIntegration;
+import de.tebrox.afkarea.integration.placeholder.AFKAreaPlaceholderExpansion;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.persistence.AFKAreaDatabaseSettings;
 import de.tebrox.afkarea.reward.RewardService;
@@ -61,10 +63,12 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private HouseholdManager householdManager;
 
     private WorldGuardIntegration worldGuardIntegration;
+    private PlaceholderApiIntegration placeholderApiIntegration;
 
     @Override
     public void onEnable() {
         worldGuardIntegration = WorldGuardIntegration.detect(this);
+        placeholderApiIntegration = PlaceholderApiIntegration.detect(this);
 
         if(worldGuardIntegration.isAvailable()) {
             getLogger().info("WorldGuard integration is available");
@@ -117,6 +121,13 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         VertexCoreApi.get().commands().register(this, new AFKAreaCommands(this));
         VertexCoreApi.get().commands().register(this, new AfkCommand(this));
+
+        if(placeholderApiIntegration.isAvailable()) {
+            new AFKAreaPlaceholderExpansion(this).register();
+            getLogger().info("PlaceholderAPI integration is available");
+        }else{
+            getLogger().info("PlaceholderAPI not found - PlaceholderAPI integration is disabled");
+        }
 
         new Metrics(this, BSTATS_PLUGIN_ID);
         getLogger().info("AFKArea has been enabled");
@@ -174,4 +185,5 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public AreaTeleportService areaTeleportService() { return areaTeleportService; }
     public RewardService rewardService() { return rewardService; }
     public HouseholdManager householdManager() { return householdManager; }
+    public RewardSessionService rewardSessionService() { return rewardSessionService; }
 }

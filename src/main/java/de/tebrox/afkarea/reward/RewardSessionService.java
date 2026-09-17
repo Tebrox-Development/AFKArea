@@ -183,6 +183,14 @@ public final class RewardSessionService {
         return address == null ? null : address.getAddress();
     }
 
+    public OptionalLong getSessionSeconds(UUID playerId) {
+        Session session = sessions.get(playerId);
+        if(session == null) return OptionalLong.empty();
+
+        long elapsedNanos = Math.max(0L, System.nanoTime() - session.startedAt);
+        return OptionalLong.of(TimeUnit.NANOSECONDS.toSeconds(elapsedNanos));
+    }
+
     private static final class Session {
         private final String areaId;
         private final long startedAt;
