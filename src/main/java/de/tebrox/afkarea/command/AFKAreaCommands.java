@@ -6,7 +6,9 @@ import de.tebrox.afkarea.area.TeleportData;
 import de.tebrox.afkarea.area.selection.CuboidSelection;
 import de.tebrox.afkarea.area.selection.SelectionPoint;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
+import de.tebrox.afkarea.region.WorldGuardRegionProvider;
 import de.tebrox.afkarea.region.data.CuboidRegionData;
+import de.tebrox.afkarea.region.data.WorldGuardRegionData;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -131,25 +133,39 @@ public final class AFKAreaCommands {
             return;
         }
 
-        if (!type.equals("cuboid")) {
-            plugin.messageService().send(player, plugin.messages().areaUnsupportedRegionType, Placeholder.unparsed("type", type));
+        if(type.equals("cuboid")) {
+            CuboidSelection selection = plugin.selectionService().getSelection(player.getUniqueId());
+
+            if (selection == null || !selection.isComplete()) {
+                plugin.messageService().send(player, plugin.messages().areaSelectionIncomplete);
+                return;
+            }
+
+            if (!selection.isSameWorld()) {
+                plugin.messageService().send(player, plugin.messages().areaSelectionWorldMismatch);
+                return;
+            }
+
+            createCuboidArea(player, id, selection);
             return;
         }
 
-        CuboidSelection selection =
-                plugin.selectionService().getSelection(player.getUniqueId());
+        if(type.equals("worldguard")) {
+            if(!plugin.worldGuardIntegration().isAvailable()) {
+                plugin.messageService().send(player, plugin.messages().worldGuardUnavailable);
+                return;
+            }
 
-        if (selection == null || !selection.isComplete()) {
-            plugin.messageService().send(player, plugin.messages().areaSelectionIncomplete);
+            if(args.length < 3 || args[2].isBlank()) {
+                plugin.messageService().send(player, plugin.messages().areaCreateWorldGuardUsage);
+                return;
+            }
+
+            createWorldGuardArea(player, id, args[2]);
             return;
         }
 
-        if (!selection.isSameWorld()) {
-            plugin.messageService().send(player, plugin.messages().areaSelectionWorldMismatch);
-            return;
-        }
-
-        createCuboidArea(player, id, selection);
+        plugin.messageService().send(player, plugin.messages().areaUnsupportedRegionType, Placeholder.unparsed("type", type));
     }
 
     private void sendSelectionPosition(Player player, String message, SelectionPoint point) {
@@ -161,6 +177,19 @@ public final class AFKAreaCommands {
                 Placeholder.unparsed("y", Integer.toString(point.y())),
                 Placeholder.unparsed("z", Integer.toString(point.z()))
         );
+    }
+
+    private void createWorldGuardArea(Player player, String id, String regionId) {
+        WorldGuardRegionData region = new WorldGuardRegionData(player.getWorld().getName(), regionId, false);
+        AreaData area = new AreaData(id, id);
+        area.setRegionType("worldguard");
+        area.setWorldGuardRegion(region);
+
+        plugin.areaManager().saveArea(area, () -> plugin.messageService().send(player, plugin.messages().areaCreated, Placeholder.unparsed("area", id)), error -> {
+            plugin.getLogger().severe("Failed to create AFK area '" + id +"': " + error.getMessage());
+            error.printStackTrace();
+            plugin.messageService().send(player, plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
+        });
     }
 
     private void createCuboidArea(Player player, String id, CuboidSelection selection) {
@@ -751,7 +780,14 @@ public final class AFKAreaCommands {
 
         String token = args[2].toLowerCase(Locale.ROOT);
 
-        return List.of("cuboid").stream().filter(type -> type.startsWith(token)).toList();
+        List<String> types = new ArrayList<>();
+        types.add("cuboid");
+
+        if(plugin.worldGuardIntegration().isAvailable()) {
+            types.add("worldguard");
+        }
+
+        return types.stream().filter(type -> type.startsWith(token)).toList();
     }
 
     @VSuggest("afkarea tp")

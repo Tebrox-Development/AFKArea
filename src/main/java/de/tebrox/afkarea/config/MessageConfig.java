@@ -38,7 +38,7 @@ public final class MessageConfig implements ConfigObject {
     public String selectionPos2Set = "<green>Position 2 set to <gray><world> <x> <y> <z></gray>.</green>";
 
     @ConfigKey("area.create-usage")
-    public String areaCreateUsage = "<red>Usage: /afkarea create <id> cuboid</red>";
+    public String areaCreateUsage = "<red>Usage: /afkarea create <id> <cuboid|worldguard></red>";
 
     @ConfigKey("area.invalid-id")
     public String areaInvalidId = "<red>Area IDs may only contain lowercase letters, numbers, '-' and '_'.</red>";
@@ -185,4 +185,10 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("household.list")
     public String householdList = "<gray>Households (<white><count></white>):\n<households></gray>";
+
+    @ConfigKey("area.create-worldguard-usage")
+    public String areaCreateWorldGuardUsage = "<red>Usage: /afkarea create <id> worldguard <region></red>";
+
+    @ConfigKey("integrations.worldguard-unavailable")
+    public String worldGuardUnavailable = "<red>WorldGuard is not available on this server.</red>";
 }
