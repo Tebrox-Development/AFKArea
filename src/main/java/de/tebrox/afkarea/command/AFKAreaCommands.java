@@ -168,6 +168,54 @@ public final class AFKAreaCommands {
         plugin.messageService().send(player, plugin.messages().areaUnsupportedRegionType, Placeholder.unparsed("type", type));
     }
 
+    @VSub("afkarea setregion")
+    @VDesc("Set the WorldGuard region of an AFK area")
+    @VPlayerOnly
+    @VPerm("afkarea.admin.setregion")
+    public void setRegion(CommandContext ctx) {
+        Player player = (Player) ctx.sender();
+        String[] args = ctx.rawArgs();
+
+        if(args.length < 2) {
+            plugin.messageService().send(player, plugin.messages().areaSetRegionUsage);
+            return;
+        }
+
+        if(!plugin.worldGuardIntegration().isAvailable()) {
+            plugin.messageService().send(player, plugin.messages().worldGuardUnavailable);
+            return;
+        }
+
+        String id = args[0];
+        String regionId = args[1];
+
+        AreaData current = plugin.areaManager().getArea(id);
+
+        if(current == null) {
+            plugin.messageService().send(player, plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        if(!"worldguard".equalsIgnoreCase(current.getRegionType())) {
+            plugin.messageService().send(player, plugin.messages().areaNotWorldGuard, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        WorldGuardRegionData currentRegion = current.getWorldGuardRegion();
+        boolean includeChildren = currentRegion != null && currentRegion.isIncludeChildren();
+
+        WorldGuardRegionData region = new WorldGuardRegionData(player.getWorld().getName(), regionId, includeChildren);
+        AreaData updated = current.copy();
+        updated.setWorldGuardRegion(region);
+
+        plugin.areaManager().saveArea(updated, () -> plugin.messageService().send(player, plugin.messages().areaRegionSet, Placeholder.unparsed("area", id), Placeholder.unparsed("region", regionId), Placeholder.unparsed("world", player.getWorld().getName())),
+                error -> {
+            plugin.getLogger().severe("Failed to update WorldGuard region for AFK area '" + id + "': " + error.getMessage());
+            error.printStackTrace();
+            plugin.messageService().send(player, plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id));
+                });
+    }
+
     private void sendSelectionPosition(Player player, String message, SelectionPoint point) {
         plugin.messageService().send(
                 player,
@@ -717,6 +765,18 @@ public final class AFKAreaCommands {
                     + "]";
         }
 
+        if("worldguard".equalsIgnoreCase(area.getRegionType()) && area.getWorldGuardRegion() != null) {
+            WorldGuardRegionData region = area.getWorldGuardRegion();
+
+            return "worldguard "
+                    + region.getWorld()
+                    + ":"
+                    + region.getRegionId()
+                    + " (include children: "
+                    + (region.isIncludeChildren() ? "yes" : "no")
+                    + ")";
+        }
+
         if (area.getRegionType() == null || area.getRegionType().isBlank()) {
             return "not configured";
         }
@@ -798,5 +858,17 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea info")
     public List<String> infoSuggest(CommandSender sender, String alias, String[] args) {
         return suggestAreaIds(sender, args, "afkarea.admin.info");
+    }
+
+    @VSuggest("arkarea setregion")
+    public List<String> setRegionSuggest(CommandSender sender, String alias, String[] args) {
+        if(!sender.hasPermission("afkarea.admin.setregion")) return List.of();
+        if(!plugin.worldGuardIntegration().isAvailable()) return List.of();
+        if(args.length > 2) return List.of();
+
+        String token = args.length >= 2 ? args[1] : "";
+        String normalized = token.toLowerCase(Locale.ROOT);
+
+        return plugin.areaManager().getAreas().stream().filter(area -> "worldguard".equalsIgnoreCase(area.getRegionType())).map(AreaData::getUniqueId).filter(id -> id != null && !id.isBlank()).filter(id -> id.toLowerCase(Locale.ROOT).startsWith(normalized)).sorted(String.CASE_INSENSITIVE_ORDER).toList();
     }
 }

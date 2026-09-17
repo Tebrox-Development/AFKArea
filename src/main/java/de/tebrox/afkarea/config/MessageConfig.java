@@ -191,4 +191,13 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("integrations.worldguard-unavailable")
     public String worldGuardUnavailable = "<red>WorldGuard is not available on this server.</red>";
+
+    @ConfigKey("area.setregion-usage")
+    public String areaSetRegionUsage = "<red>Usage: /afkarea setregion <id> <region></red>";
+
+    @ConfigKey("area.not-worldguard")
+    public String areaNotWorldGuard = "<red>AFK area '<area>' is not a WorldGuard area.</red>";
+
+    @ConfigKey("area.region-set")
+    public String areaRegionSet = "<green>WorldGuard region for AFK area '<area>' was set to '<region>' in world '<world>'.</green>";
 }
