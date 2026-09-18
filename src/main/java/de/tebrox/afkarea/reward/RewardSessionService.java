@@ -213,47 +213,79 @@ public final class RewardSessionService {
     }
 
     public OptionalLong getNextRewardSeconds(UUID playerId) {
+        Optional<RewardProgress> progress = getRewardProgress(playerId);
+        if(progress.isEmpty()) return OptionalLong.empty();
+
+        return OptionalLong.of(progress.get().remainingSeconds);
+    }
+
+    public Optional<RewardProgress> getRewardProgress(UUID playerId) {
         Session session = sessions.get(playerId);
-        if(session == null) return OptionalLong.empty();
+        if(session == null) return Optional.empty();
 
         AreaData area = areaManager.getArea(session.areaId);
-        if(area == null || area.getRewards() == null) return OptionalLong.empty();
+        if(area == null || area.getRewards() == null) return Optional.empty();
 
         RewardConfigData rewardConfig = area.getRewards();
         long now = System.nanoTime();
+        long sessionElapsedNanos = Math.max(0L, now - session.startedAt);
+        long sessionSeconds = TimeUnit.NANOSECONDS.toSeconds(sessionElapsedNanos);
 
         if("interval".equalsIgnoreCase(rewardConfig.getScheduleType())) {
-            int intervalSeconds = rewardConfig.getIntervalSeconds();
-            if(intervalSeconds <= 0) return OptionalLong.empty();
-
-            long reference = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
-            long remaining = TimeUnit.SECONDS.toNanos(intervalSeconds) - (now - reference);
-
-            return OptionalLong.of(Math.max(0L, TimeUnit.NANOSECONDS.toSeconds(remaining)));
+            return intervalProgress(session, rewardConfig, now, sessionSeconds);
         }
 
         if("milestones".equalsIgnoreCase(rewardConfig.getScheduleType())) {
-            long elapsed = now - session.startedAt;
-            long nearest = Long.MAX_VALUE;
-
-            List<RewardMilestoneData> milestones = rewardConfig.getMilestones();
-
-            if(milestones == null || milestones.isEmpty()) return OptionalLong.empty();
-
-            for(int index = 0; index < milestones.size(); index++) {
-                if(session.completedMilestones.contains(index)) continue;
-
-                RewardMilestoneData milestone = milestones.get(index);
-                if(milestone == null || milestone.getAfterSeconds() <= 0) continue;
-
-                long remaining = TimeUnit.SECONDS.toNanos(milestone.getAfterSeconds()) - elapsed;
-                nearest = Math.min(nearest, Math.max(0L, remaining));
-            }
-            if(nearest == Long.MAX_VALUE) return OptionalLong.empty();
-
-            return OptionalLong.of(TimeUnit.NANOSECONDS.toSeconds(nearest));
+            return milestoneProgress(session, rewardConfig, sessionElapsedNanos, sessionSeconds);
         }
-        return OptionalLong.empty();
+        return Optional.empty();
+    }
+
+    private Optional<RewardProgress> intervalProgress(Session session, RewardConfigData config, long now, long sessionSeconds) {
+        int intervalSeconds = config.getIntervalSeconds();
+        if(intervalSeconds <= 0) return Optional.empty();
+
+        long intervalNanos = TimeUnit.SECONDS.toNanos(intervalSeconds);
+        long reference = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
+        long elapsedInCycle = Math.max(0L, now - reference);
+        long remainingNanos = Math.max(0L, intervalNanos - elapsedInCycle);
+        double progress = clampProgress((double) elapsedInCycle / (double) intervalNanos);
+
+        return Optional.of(new RewardProgress(sessionSeconds, TimeUnit.NANOSECONDS.toSeconds(remainingNanos), intervalSeconds, progress));
+    }
+
+    private Optional<RewardProgress> milestoneProgress(Session session, RewardConfigData config, long sessionElapsedNanos, long sessionSeconds) {
+        List<RewardMilestoneData> milestones = config.getMilestones();
+        if(milestones == null ||milestones.isEmpty()) return Optional.empty();
+
+        long previousMilestoneNanos = 0L;
+        long nextMilestoneNanos = Long.MAX_VALUE;
+
+        for(int index = 0; index < milestones.size(); index++) {
+            RewardMilestoneData milestone = milestones.get(index);
+            if(milestone == null || milestone.getAfterSeconds() <= 0) continue;
+
+            long requiredNanos = TimeUnit.SECONDS.toNanos(milestone.getAfterSeconds());
+            if(session.completedMilestones.contains(index)) {
+                previousMilestoneNanos = Math.max(previousMilestoneNanos, requiredNanos);
+                continue;
+            }
+
+            nextMilestoneNanos = Math.min(nextMilestoneNanos, requiredNanos);
+        }
+
+        if(nextMilestoneNanos == Long.MAX_VALUE) return Optional.empty();
+
+        long cycleNanos = Math.max(1L, nextMilestoneNanos - previousMilestoneNanos);
+        long elapsedInCycle = Math.max(0L, sessionElapsedNanos - previousMilestoneNanos);
+        long remainingNanos = Math.max(0L, nextMilestoneNanos - sessionElapsedNanos);
+        double progress = clampProgress((double) elapsedInCycle / (double) cycleNanos);
+
+        return Optional.of(new RewardProgress(sessionSeconds, TimeUnit.NANOSECONDS.toSeconds(remainingNanos), Math.max(1L, TimeUnit.NANOSECONDS.toSeconds(cycleNanos)), progress));
+    }
+
+    private double clampProgress(double progress) {
+        return Math.max(0.0D, Math.min(1.0D, progress));
     }
 
     private static final class Session {
@@ -279,4 +311,6 @@ public final class RewardSessionService {
             ADDRESS_UNAVAILABLE
         }
     }
+
+    public record RewardProgress(long sessionSeconds, long remainingSeconds, long cycleSeconds, double progress) {}
 }
