@@ -80,14 +80,18 @@ public final class RewardConfigData {
 
         copy.rewards = new ArrayList<>();
 
-        for (CommandRewardData reward : rewards) {
-            copy.rewards.add(reward.copy());
+        if(rewards != null) {
+            for (CommandRewardData reward : rewards) {
+                copy.rewards.add(reward.copy());
+            }
         }
 
         copy.milestones = new ArrayList<>();
 
-        for (RewardMilestoneData milestone : milestones) {
-            copy.milestones.add(milestone.copy());
+        if(milestones != null) {
+            for (RewardMilestoneData milestone : milestones) {
+                copy.milestones.add(milestone.copy());
+            }
         }
 
         copy.message = message;

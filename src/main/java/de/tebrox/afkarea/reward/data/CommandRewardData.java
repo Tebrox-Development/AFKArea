@@ -71,7 +71,7 @@ public final class CommandRewardData {
         copy.enabled = enabled;
         copy.weight = weight;
         copy.permission = permission;
-        copy.commands = new ArrayList<>(commands);
+        copy.commands = commands == null ? new ArrayList<>() : new ArrayList<>(commands);
         copy.message = message;
 
         return copy;

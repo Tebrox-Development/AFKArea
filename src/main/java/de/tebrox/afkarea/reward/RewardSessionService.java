@@ -226,6 +226,8 @@ public final class RewardSessionService {
 
             List<RewardMilestoneData> milestones = rewardConfig.getMilestones();
 
+            if(milestones == null || milestones.isEmpty()) return OptionalLong.empty();
+
             for(int index = 0; index < milestones.size(); index++) {
                 if(session.completedMilestones.contains(index)) continue;
 

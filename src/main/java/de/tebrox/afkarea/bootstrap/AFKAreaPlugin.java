@@ -150,23 +150,20 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        idleTracker.stop();
+        if(idleTracker != null) idleTracker.stop();
+        if(rewardSessionService != null) rewardSessionService.stop();
 
         VertexCoreApi.get().commands().unregisterAll(this);
 
-        visibilityService.restoreAll(getServer().getOnlinePlayers());
-        tabListService.restoreAll(getServer().getOnlinePlayers());
-        selectionService.clearAll();
-
-        playerStateService.clearAll();
-        activityService.clearAll();
-
+        if(visibilityService != null) visibilityService.restoreAll(getServer().getOnlinePlayers());
+        if(tabListService != null) tabListService.restoreAll(getServer().getOnlinePlayers());
+        if(selectionService != null) selectionService.clearAll();
+        if(areaSessionService != null) areaSessionService.clearAll();
+        if(playerStateService != null) playerStateService.clearAll();
+        if(activityService != null) activityService.clearAll();
         if(householdManager != null) householdManager.clear();
         if(areaManager != null) areaManager.clear();
         if(areaDatabase != null) areaDatabase.close();
-
-        areaSessionService.clearAll();
-        rewardSessionService.stop();
 
         getLogger().info("AFKArea has been disabled");
     }

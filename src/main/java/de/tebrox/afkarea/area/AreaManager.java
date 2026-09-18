@@ -23,7 +23,10 @@ public final class AreaManager {
     private final List<RuntimeArea> runtimeAreas = new ArrayList<>();
 
     private boolean loaded;
+    privat boolean loading;
+    private long loadGeneration;
     private Runnable runtimeChangeListener = () -> {};
+
 
     public AreaManager(JavaPlugin plugin, Database<AreaData> database, WorldGuardIntegration worldGuardIntegration) {
         this.plugin = plugin;
@@ -32,13 +35,32 @@ public final class AreaManager {
     }
 
     public void loadAsync(){
-        loaded = false;
+        boolean preserveCurrentCache = loaded;
+        long generation = ++loadGeneration;
+
+        loading = true;
 
         database.loadObjectsAsyncMain(
-                this::replaceCache,
+                loadedAreas -> {
+                    if(generation != loadGeneration) return;
+                    loading = false;
+
+                    try {
+                        replaceCache(loadedAreas);
+                    }catch(RuntimeException exception) {
+                        loaded = preserveCurrentCache;
+
+                        plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + exception.getMessage() : "Failed to loda AFK areas: " + exception.get);
+                        exception.printStackTrace();
+                    }
+                },
                 error -> {
-                    loaded = false;
-                    plugin.getLogger().severe("Failed to load AFK areas: " + error.getMessage());
+                    if(generation != loadGeneration) return;
+
+                    loading = false;
+                    loaded = preserveCurrentCache;
+
+                    plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + error.getMessage() : "Failed to loda AFK areas: " + exception.get);
                     error.printStackTrace();
                 });
     }
@@ -81,8 +103,12 @@ public final class AreaManager {
     }
 
     public void clear() {
+        loadGeneration++;
+        loading = false;
+
         areas.clear();
         runtimeAreas.clear();
+
         loaded = false;
     }
 
@@ -90,9 +116,16 @@ public final class AreaManager {
         return loaded;
     }
 
+    private IllegalStateException dataUnavailableException() {
+        if(loading && loaded) {
+            return new IllegalStateException("Area data is currently reloading");
+        }
+        return new IllegalStateException("Area data is still loading");
+    }
+
     public void saveArea(AreaData area, Runnable onSuccess, Consumer<Throwable> onError) {
         if(!loaded) {
-            onError.accept(new IllegalStateException("Area data is still loading"));
+            onError.accept(dataUnavailableException());
             return;
         }
 
@@ -113,7 +146,7 @@ public final class AreaManager {
 
     public void deleteArea(String id, Runnable onSuccess, Consumer<Throwable> onError) {
         if(!loaded) {
-            onError.accept(new IllegalStateException("Area is still loading"));
+            onError.accept(dataUnavailableException());
             return;
         }
 
