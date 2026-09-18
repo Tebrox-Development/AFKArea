@@ -12,6 +12,7 @@ import de.tebrox.afkarea.region.data.CuboidRegionData;
 import de.tebrox.afkarea.region.data.WorldGuardRegionData;
 import de.tebrox.afkarea.reward.RewardSessionService;
 import de.tebrox.afkarea.state.PlayerState;
+import de.tebrox.afkarea.stats.AFKPlayerStatsData;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
@@ -22,10 +23,14 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 public final class AFKAreaCommands {
     private final AFKAreaPlugin plugin;
+    private static final DateTimeFormatter STATS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT).withZone(ZoneId.systemDefault());
 
     public AFKAreaCommands(AFKAreaPlugin plugin) {
         this.plugin = plugin;
@@ -673,6 +678,53 @@ public final class AFKAreaCommands {
         );
     }
 
+    @VSub("afkarea stats")
+    @VDesc("Show persistent AFK area statistics for a player")
+    @VPerm(AFKAreaPermissions.ADMIN_STATS)
+    public void stats(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if(args.length < 1) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().statsUsage);
+            return;
+        }
+
+        if(!plugin.playerStatsService().isLoaded()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().statsDataLoading);
+            return;
+        }
+
+        String input = args[0];
+        OfflinePlayer target = findKnownPlayer(input);
+
+        if(target == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().statsUnknownPlayer, Placeholder.unparsed("player", input));
+            return;
+        }
+
+        String playerName = target.getName() == null ? input : target.getName();
+        Optional<AFKPlayerStatsData> stats = plugin.playerStatsService().getStats(target.getUniqueId());
+
+        if(stats.isEmpty()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().statsNoData, Placeholder.unparsed("player", playerName));
+            return;
+        }
+
+        AFKPlayerStatsData data = stats.get();
+
+        plugin.messageService().send(
+                ctx.sender(),
+                plugin.messages().stats,
+                Placeholder.unparsed("player", playerName),
+                Placeholder.unparsed("sessions", Long.toString(data.getSessionCount())),
+                Placeholder.unparsed("total_time", formatDuration(data.getTotalTimeSeconds())),
+                Placeholder.unparsed("longest_session", formatDuration(data.getLongestSessionSeconds())),
+                Placeholder.unparsed("last_session", formatDuration(data.getLastSessionSeconds())),
+                Placeholder.unparsed("last_area", data.getLastAreaId() == null ? "-" : data.getLastAreaId()),
+                Placeholder.unparsed("last_ended", formatTimestamp(data.getLastSessionEndedAtEpochMillis()))
+        );
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -854,6 +906,11 @@ public final class AFKAreaCommands {
         return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, secs);
     }
 
+    private String formatTimestamp(long epochMillis) {
+        if(epochMillis <= 0L) return "-";
+        return STATS_DATE_FORMAT.format(Instant.ofEpochMilli(epochMillis));
+    }
+
     private String formatIpSlots(RewardSessionService.IpRewardStatus status) {
         return switch (status.mode()) {
             case BYPASS -> "bypass";
@@ -1007,5 +1064,15 @@ public final class AFKAreaCommands {
         String token = args.length >= 2 ? args[1].toLowerCase(Locale.ROOT) : "";
 
         return Bukkit.getOnlinePlayers().stream().map(Player::getName).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(token)).sorted(String.CASE_INSENSITIVE_ORDER).toList();
+    }
+
+    @VSuggest("afkarea stats")
+    public List<String> statsSuggest(CommandSender sender, String alias, String[] args) {
+        if(!sender.hasPermission(AFKAreaPermissions.ADMIN_STATS)) return List.of();
+        if(args.length > 2) return List.of();
+
+        String token = args.length >= 2 ? args[1].toLowerCase(Locale.ROOT) : "";
+
+        return Arrays.stream(Bukkit.getOfflinePlayers()).map(OfflinePlayer::getName).filter(Objects::nonNull).filter(name -> name.toLowerCase(Locale.ROOT).startsWith(token)).sorted(String.CASE_INSENSITIVE_ORDER).toList();
     }
 }

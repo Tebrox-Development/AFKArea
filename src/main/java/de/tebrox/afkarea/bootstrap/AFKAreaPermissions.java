@@ -11,6 +11,7 @@ public final class AFKAreaPermissions {
 
     public static final String COMMAND_AFK = COMMAND + "afk";
     public static final String COMMAND_TELEPORT = COMMAND + "teleport";
+
     public static final String ADMIN_RELOAD = ADMIN + "reload";
     public static final String ADMIN_SELECTION = ADMIN + "selection";
     public static final String ADMIN_CREATE = ADMIN + "create";
@@ -25,7 +26,10 @@ public final class AFKAreaPermissions {
     public static final String ADMIN_SET_PRIORITY = ADMIN + "setpriority";
     public static final String ADMIN_STATUS = ADMIN + "status";
     public static final String ADMIN_HOUSEHOLD = ADMIN + "household";
+    public static final String ADMIN_STATS = ADMIN + "stats";
+
     public static final String STAFF_SEE_HIDDEN = STAFF + "see-hidden";
+
     public static final String BYPASS_AUTO_AFK = BYPASS + "auto-afk";
     public static final String BYPASS_IP_LIMIT = BYPASS + "ip-limit";
     public static final String BYPASS_REWARDS = BYPASS + "rewards";

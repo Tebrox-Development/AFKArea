@@ -231,4 +231,25 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reload.failed")
     public String reloadFailed = "<red>AFKArea configuration could not be reloaded. The previous configuration remains active. Check the server console.</red>";
+
+    @ConfigKey("stats.usage")
+    public String statsUsage = "<red>Usage: /afkarea stats <player></red>";
+
+    @ConfigKey("stats.data-loading")
+    public String statsDataLoading = "<yellow>AFK player statistics are still loading. Please try again.</yellow>";
+
+    @ConfigKey("stats.unknown-player")
+    public String statsUnknownPlayer = "<red>Player '<player>' is not known to this server.</red>";
+
+    @ConfigKey("stats.no-data")
+    public String statsNoData = "<yellow>No completed AFK area sessions are stored for <player>.</yellow>";
+
+    @ConfigKey("stats.output")
+    public String stats = "<gold>AFKArea stats for <player></gold>\n"
+                    + "<gray>Sessions: <white><sessions></white>\n"
+                    + "Total time: <white><total_time></white>\n"
+                    + "Longest session: <white><longest_session></white>\n"
+                    + "Last session: <white><last_session></white>\n"
+                    + "Last area: <white><last_area></white>\n"
+                    + "Last session ended: <white><last_ended></white></gray>";
 }
