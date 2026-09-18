@@ -1,5 +1,6 @@
 package de.tebrox.afkarea.command;
 
+import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.vertexCore.command.annotation.VCommand;
@@ -20,7 +21,7 @@ public final class AfkCommand {
     @VCommand("afk")
     @VDesc("Toggle your AFK status")
     @VPlayerOnly
-    @VPerm(value = "afkarea.command.afk", def = PermissionDefault.TRUE)
+    @VPerm(value = AFKAreaPermissions.COMMAND_AFK, def = PermissionDefault.TRUE)
     public void afk(CommandContext ctx) {
         Player player = (Player) ctx.sender();
         PlayerState state = plugin.playerStateService().toggleManualAfk(player.getUniqueId());

@@ -32,7 +32,7 @@ public final class AFKAreaConfigValidator {
         if(config.databaseTimeoutMillis <= 0) errors.add("database.timeout-millis must be greater than 0.");
         if(config.databasePoolSize <= 0) errors.add("database.pool-size must be greater than 0.");
         if(config.databaseTablePrefix == null || config.databaseTablePrefix.isBlank()) warnings.add("database.table-prefix is blank.");
-        else if(!config.databaseTablePrefix.matches("[A-Za-z0-9_]+")) errors.add("database.table-prefix may only contain letters, numbers an underscores");
+        else if(!config.databaseTablePrefix.matches("[A-Za-z0-9_]+")) errors.add("database.table-prefix may only contain letters, numbers and underscores");
 
         if("mysql".equals(backend)) {
             if(config.databaseMysqlUrl == null || config.databaseMysqlUrl.isBlank()) errors.add("database.mysql.url must not be blank when database.backend is mysql");

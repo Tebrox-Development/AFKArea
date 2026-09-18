@@ -2,6 +2,7 @@ package de.tebrox.afkarea.reward;
 
 import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.area.AreaManager;
+import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.household.HouseholdManager;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
@@ -23,7 +24,7 @@ public final class RewardSessionService {
 
     private final Map<UUID, Session> sessions = new HashMap<>();
 
-    private static final String IP_LIMIT_BYPASS_PERMISSION = "afkarea.bypass.ip-limit";
+    private static final String IP_LIMIT_BYPASS_PERMISSION = AFKAreaPermissions.BYPASS_IP_LIMIT;
     private final Supplier<AFKAreaConfig> config;
     private final HouseholdManager householdManager;
 

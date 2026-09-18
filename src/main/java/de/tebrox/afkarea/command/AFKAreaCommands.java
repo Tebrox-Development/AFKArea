@@ -6,8 +6,8 @@ import de.tebrox.afkarea.area.AreaTeleportService;
 import de.tebrox.afkarea.area.TeleportData;
 import de.tebrox.afkarea.area.selection.CuboidSelection;
 import de.tebrox.afkarea.area.selection.SelectionPoint;
+import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
-import de.tebrox.afkarea.region.WorldGuardRegionProvider;
 import de.tebrox.afkarea.region.data.CuboidRegionData;
 import de.tebrox.afkarea.region.data.WorldGuardRegionData;
 import de.tebrox.afkarea.reward.RewardSessionService;
@@ -24,8 +24,6 @@ import org.bukkit.permissions.PermissionDefault;
 
 import java.util.*;
 
-import de.tebrox.afkarea.household.HouseholdManager;
-
 public final class AFKAreaCommands {
     private final AFKAreaPlugin plugin;
 
@@ -36,7 +34,7 @@ public final class AFKAreaCommands {
     @VCommand("afkarea")
     @VDesc("Teleport to the default AFK area")
     @VPlayerOnly
-    @VPerm(value = "afkarea.command.teleport", def = PermissionDefault.TRUE)
+    @VPerm(value = AFKAreaPermissions.COMMAND_TELEPORT, def = PermissionDefault.TRUE)
     public void root(CommandContext ctx) {
         Player player = (Player) ctx.sender();
 
@@ -56,7 +54,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea reload")
     @VDesc("Reload AFKArea configuration")
-    @VPerm("afkarea.admin.reload")
+    @VPerm(AFKAreaPermissions.ADMIN_RELOAD)
     public void reload(CommandContext ctx) {
         if(plugin.reloadConfigs()) {
             plugin.messageService().send(ctx.sender(), plugin.messages().reloadSuccess);
@@ -68,7 +66,7 @@ public final class AFKAreaCommands {
     @VSub("afkarea pos1")
     @VDesc("Set the first cuboid selection position")
     @VPlayerOnly
-    @VPerm("afkarea.admin.selection")
+    @VPerm(AFKAreaPermissions.ADMIN_SELECTION)
     public void pos1(CommandContext ctx) {
         Player player = (Player) ctx.sender();
 
@@ -90,7 +88,7 @@ public final class AFKAreaCommands {
     @VSub("afkarea pos2")
     @VDesc("Set the second cuboid selection position")
     @VPlayerOnly
-    @VPerm("afkarea.admin.selection")
+    @VPerm(AFKAreaPermissions.ADMIN_SELECTION)
     public void pos2(CommandContext ctx) {
         Player player = (Player) ctx.sender();
 
@@ -112,7 +110,7 @@ public final class AFKAreaCommands {
     @VSub("afkarea create")
     @VDesc("Create an AFK area")
     @VPlayerOnly
-    @VPerm("afkarea.admin.create")
+    @VPerm(AFKAreaPermissions.ADMIN_CREATE)
     public void create(CommandContext ctx) {
         Player player = (Player) ctx.sender();
         String[] args = ctx.rawArgs();
@@ -184,7 +182,7 @@ public final class AFKAreaCommands {
     @VSub("afkarea setregion")
     @VDesc("Set the WorldGuard region of an AFK area")
     @VPlayerOnly
-    @VPerm("afkarea.admin.setregion")
+    @VPerm(AFKAreaPermissions.ADMIN_SET_REGION)
     public void setRegion(CommandContext ctx) {
         Player player = (Player) ctx.sender();
         String[] args = ctx.rawArgs();
@@ -288,7 +286,7 @@ public final class AFKAreaCommands {
     @VSub("afkarea redefine")
     @VDesc("Redefine a cuboid AFK area")
     @VPlayerOnly
-    @VPerm("afkarea.admin.redefine")
+    @VPerm(AFKAreaPermissions.ADMIN_REDEFINE)
     public void redefine(CommandContext ctx) {
         Player player = (Player) ctx.sender();
         String[] args = ctx.rawArgs();
@@ -354,7 +352,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea rename")
     @VDesc("Rename an AFK area")
-    @VPerm("afkarea.admin.rename")
+    @VPerm(AFKAreaPermissions.ADMIN_RENAME)
     public void rename(CommandContext ctx) {
         String[] args = ctx.rawArgs();
 
@@ -397,7 +395,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea delete")
     @VDesc("Delete an AFK area")
-    @VPerm("afkarea.admin.delete")
+    @VPerm(AFKAreaPermissions.ADMIN_DELETE)
     public void delete(CommandContext ctx) {
         String[] args = ctx.rawArgs();
 
@@ -429,7 +427,7 @@ public final class AFKAreaCommands {
     @VSub("afkarea setteleport")
     @VDesc("Set the teleport location of an AFK area")
     @VPlayerOnly
-    @VPerm("afkarea.admin.setteleport")
+    @VPerm(AFKAreaPermissions.ADMIN_SET_TELEPORT)
     public void setTeleport(CommandContext ctx) {
         Player player = (Player) ctx.sender();
         String[] args = ctx.rawArgs();
@@ -478,7 +476,7 @@ public final class AFKAreaCommands {
     @VSub("afkarea tp")
     @VDesc("Teleport to an AFK area")
     @VPlayerOnly
-    @VPerm("afkarea.admin.tp")
+    @VPerm(AFKAreaPermissions.ADMIN_TP)
     public void tp(CommandContext ctx) {
         Player player = (Player) ctx.sender();
         String[] args = ctx.rawArgs();
@@ -513,7 +511,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea list")
     @VDesc("List all AFK areas")
-    @VPerm("afkarea.admin.list")
+    @VPerm(AFKAreaPermissions.ADMIN_LIST)
     public void list(CommandContext ctx) {
         List<AreaData> areas = plugin.areaManager().getAreas().stream().sorted(Comparator.comparing(AreaData::getUniqueId, String.CASE_INSENSITIVE_ORDER)).toList();
 
@@ -539,7 +537,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea info")
     @VDesc("Show information about an AFK area")
-    @VPerm("afkarea.admin.info")
+    @VPerm(AFKAreaPermissions.ADMIN_INFO)
     public void info(CommandContext ctx) {
         String[] args = ctx.rawArgs();
 
@@ -589,7 +587,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea setpriority")
     @VDesc("Set the priority of an AFK area")
-    @VPerm("afkarea.admin.setpriority")
+    @VPerm(AFKAreaPermissions.ADMIN_SET_PRIORITY)
     public void setPriority(CommandContext ctx) {
         String[] args = ctx.rawArgs();
         if(args.length < 2) {
@@ -625,7 +623,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea status")
     @VDesc("Show runtime AFK status for a player")
-    @VPerm("afkarea.admin.status")
+    @VPerm(AFKAreaPermissions.ADMIN_STATUS)
     public void status(CommandContext ctx) {
         String[] args = ctx.rawArgs();
 
@@ -635,93 +633,49 @@ public final class AFKAreaCommands {
             target = Bukkit.getPlayerExact(args[0]);
 
             if (target == null) {
-                plugin.messageService().send(
-                        ctx.sender(),
-                        plugin.messages().statusPlayerNotOnline,
-                        Placeholder.unparsed("player", args[0])
-                );
+                plugin.messageService().send(ctx.sender(), plugin.messages().statusPlayerNotOnline, Placeholder.unparsed("player", args[0]));
                 return;
             }
         } else if (ctx.sender() instanceof Player player) {
             target = player;
         } else {
-            plugin.messageService().send(
-                    ctx.sender(),
-                    plugin.messages().statusUsage
-            );
+            plugin.messageService().send(ctx.sender(), plugin.messages().statusUsage);
             return;
         }
 
         UUID playerId = target.getUniqueId();
 
-        PlayerState state =
-                plugin.playerStateService().getState(playerId);
+        PlayerState state = plugin.playerStateService().getState(playerId);
 
-        String areaId =
-                plugin.areaSessionService().getAreaId(playerId);
+        String areaId = plugin.areaSessionService().getAreaId(playerId);
 
-        AreaEntrySource entrySource =
-                plugin.areaSessionService()
-                        .getEntrySource(playerId);
+        AreaEntrySource entrySource = plugin.areaSessionService().getEntrySource(playerId);
 
-        long idleSeconds =
-                plugin.activityService()
-                        .getIdleDuration(playerId)
-                        .toSeconds();
+        long idleSeconds = plugin.activityService().getIdleDuration(playerId).toSeconds();
 
-        OptionalLong session =
-                plugin.rewardSessionService()
-                        .getSessionSeconds(playerId);
+        OptionalLong session = plugin.rewardSessionService().getSessionSeconds(playerId);
 
-        OptionalLong nextReward =
-                plugin.rewardSessionService()
-                        .getNextRewardSeconds(playerId);
+        OptionalLong nextReward = plugin.rewardSessionService().getNextRewardSeconds(playerId);
 
-        RewardSessionService.IpRewardStatus ipStatus =
-                plugin.rewardSessionService()
-                        .getIpRewardStatus(target);
+        RewardSessionService.IpRewardStatus ipStatus = plugin.rewardSessionService().getIpRewardStatus(target);
 
         plugin.messageService().send(
                 ctx.sender(),
                 plugin.messages().status,
                 Placeholder.unparsed("player", target.getName()),
                 Placeholder.unparsed("state", state.name()),
-                Placeholder.unparsed(
-                        "area",
-                        areaId == null ? "-" : areaId
-                ),
-                Placeholder.unparsed(
-                        "entry",
-                        entrySource == null
-                                ? "-"
-                                : entrySource.name()
-                ),
-                Placeholder.unparsed(
-                        "idle",
-                        formatDuration(idleSeconds)
-                ),
-                Placeholder.unparsed(
-                        "session",
-                        session.isPresent()
-                                ? formatDuration(session.getAsLong())
-                                : "-"
-                ),
-                Placeholder.unparsed(
-                        "next_reward",
-                        nextReward.isPresent()
-                                ? formatDuration(nextReward.getAsLong())
-                                : "-"
-                ),
-                Placeholder.unparsed(
-                        "ip_slots",
-                        formatIpSlots(ipStatus)
-                )
+                Placeholder.unparsed("area", areaId == null ? "-" : areaId),
+                Placeholder.unparsed("entry", entrySource == null ? "-" : entrySource.name()),
+                Placeholder.unparsed("idle", formatDuration(idleSeconds)),
+                Placeholder.unparsed("session", session.isPresent() ? formatDuration(session.getAsLong()) : "-"),
+                Placeholder.unparsed("next_reward", nextReward.isPresent() ? formatDuration(nextReward.getAsLong()) : "-"),
+                Placeholder.unparsed("ip_slots", formatIpSlots(ipStatus))
         );
     }
 
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
-    @VPerm("afkarea.admin.household")
+    @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
     public void householdLink(CommandContext ctx) {
         String[] args = ctx.rawArgs();
 
@@ -775,7 +729,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea household unlink")
     @VDesc("Remove a player from their household")
-    @VPerm("afkarea.admin.household")
+    @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
     public void householdUnlink(CommandContext ctx) {
         String[] args = ctx.rawArgs();
 
@@ -816,7 +770,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea household info")
     @VDesc("Show the household of a player")
-    @VPerm("afkarea.admin.household")
+    @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
     public void householdInfo(CommandContext ctx) {
         String[] args = ctx.rawArgs();
 
@@ -855,7 +809,7 @@ public final class AFKAreaCommands {
 
     @VSub("afkarea household list")
     @VDesc("List all configured households")
-    @VPerm("afkarea.admin.household")
+    @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
     public void householdList(CommandContext ctx) {
         if (!plugin.householdManager().isLoaded()) {
             plugin.messageService().send(ctx.sender(), plugin.messages().householdDataLoading);
@@ -978,27 +932,27 @@ public final class AFKAreaCommands {
 
     @VSuggest("afkarea redefine")
     public List<String> redefineSuggest(CommandSender sender, String alias, String[] args) {
-        return suggestAreaIds(sender, args, "afkarea.admin.redefine");
+        return suggestAreaIds(sender, args, AFKAreaPermissions.ADMIN_REDEFINE);
     }
 
     @VSuggest("afkarea rename")
     public List<String> renameSuggest(CommandSender sender, String alias, String[] args) {
-        return suggestAreaIds(sender, args, "afkarea.admin.rename");
+        return suggestAreaIds(sender, args, AFKAreaPermissions.ADMIN_RENAME);
     }
 
     @VSuggest("afkarea delete")
     public List<String> deleteSuggest(CommandSender sender, String alias, String[] args) {
-        return suggestAreaIds(sender, args, "afkarea.admin.delete");
+        return suggestAreaIds(sender, args, AFKAreaPermissions.ADMIN_DELETE);
     }
 
     @VSuggest("afkarea setteleport")
     public List<String> setTeleportSuggest(CommandSender sender, String alias, String[] args) {
-        return suggestAreaIds(sender, args, "afkarea.admin.setteleport");
+        return suggestAreaIds(sender, args, AFKAreaPermissions.ADMIN_SET_TELEPORT);
     }
 
     @VSuggest("afkarea create")
     public List<String> createSuggest(CommandSender sender, String alias, String[] args) {
-        if(!sender.hasPermission("afkarea.admin.create")) {
+        if(!sender.hasPermission(AFKAreaPermissions.ADMIN_CREATE)) {
             return List.of();
         }
 
@@ -1020,17 +974,17 @@ public final class AFKAreaCommands {
 
     @VSuggest("afkarea tp")
     public List<String> tpSuggest(CommandSender sender, String alias, String[] args) {
-        return suggestAreaIds(sender, args, "afkarea.admin.tp");
+        return suggestAreaIds(sender, args, AFKAreaPermissions.ADMIN_TP);
     }
 
     @VSuggest("afkarea info")
     public List<String> infoSuggest(CommandSender sender, String alias, String[] args) {
-        return suggestAreaIds(sender, args, "afkarea.admin.info");
+        return suggestAreaIds(sender, args, AFKAreaPermissions.ADMIN_INFO);
     }
 
     @VSuggest("afkarea setregion")
     public List<String> setRegionSuggest(CommandSender sender, String alias, String[] args) {
-        if(!sender.hasPermission("afkarea.admin.setregion")) return List.of();
+        if(!sender.hasPermission(AFKAreaPermissions.ADMIN_SET_REGION)) return List.of();
         if(!plugin.worldGuardIntegration().isAvailable()) return List.of();
         if(args.length > 2) return List.of();
 
@@ -1042,12 +996,12 @@ public final class AFKAreaCommands {
 
     @VSuggest("afkarea setpriority")
     public List<String> setPrioritySuggest(CommandSender sender, String alias, String[] args) {
-        return suggestAreaIds(sender, args, "afkarea.admin.setpriority");
+        return suggestAreaIds(sender, args, AFKAreaPermissions.ADMIN_SET_PRIORITY);
     }
 
     @VSuggest("afkarea status")
     public List<String> statusSuggest(CommandSender sender, String alias, String[] args) {
-        if (!sender.hasPermission("afkarea.admin.status")) return List.of();
+        if (!sender.hasPermission(AFKAreaPermissions.ADMIN_STATUS)) return List.of();
         if (args.length > 2) return List.of();
 
         String token = args.length >= 2 ? args[1].toLowerCase(Locale.ROOT) : "";

@@ -1,5 +1,6 @@
 package de.tebrox.afkarea.config;
 
+import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.vertexCore.config.ConfigObject;
 import de.tebrox.vertexCore.config.annotation.ConfigKey;
 import de.tebrox.vertexCore.config.annotation.StoreAt;
@@ -26,7 +27,7 @@ public final class AFKAreaConfig implements ConfigObject {
     public boolean hideFromTablist = true;
 
     @ConfigKey("visibility.staff-view-permission")
-    public String staffViewPermission = "afkarea.staff.see-hidden";
+    public String staffViewPermission = AFKAreaPermissions.STAFF_SEE_HIDDEN;
 
     @ConfigKey("anti-abuse.max-rewarding-players-per-ip")
     public int maxRewardingPlayersPerIp = 2;

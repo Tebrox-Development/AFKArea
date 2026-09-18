@@ -3,6 +3,7 @@ package de.tebrox.afkarea.activity;
 import de.tebrox.afkarea.area.AreaEntrySource;
 import de.tebrox.afkarea.area.AreaSessionService;
 import de.tebrox.afkarea.area.AreaTeleportService;
+import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.display.TabListService;
@@ -134,7 +135,7 @@ public final class IdleTracker {
     }
 
     private boolean isAutomationSuspended(Player player) {
-        return player.hasPermission("afkarea.bypass.auto-afk")
+        return player.hasPermission(AFKAreaPermissions.BYPASS_AUTO_AFK)
                 || player.getGameMode() == GameMode.SPECTATOR
                 || player.isDead()
                 || player.isSleeping();

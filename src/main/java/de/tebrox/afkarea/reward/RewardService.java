@@ -1,6 +1,7 @@
 package de.tebrox.afkarea.reward;
 
 import de.tebrox.afkarea.area.AreaData;
+import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.reward.data.CommandRewardData;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public final class RewardService {
-    private static final String BYPASS_PERMISSION = "afkarea.bypass.rewards";
+    private static final String BYPASS_PERMISSION = AFKAreaPermissions.BYPASS_REWARDS;
     private final JavaPlugin plugin;
     private final RewardRoller rewardRoller;
 
