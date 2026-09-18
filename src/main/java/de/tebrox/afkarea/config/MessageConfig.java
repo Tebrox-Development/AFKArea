@@ -127,7 +127,7 @@ public final class MessageConfig implements ConfigObject {
     public String areaEntered = "<yellow>You entered AFK area '<area>'.</yellow>";
 
     @ConfigKey("area.left")
-    public String areaLeft = "<green>You left AFK area '<area>'.</green>";
+    public String areaLeft = "<green>You left AFK area '<area>' after <yellow><duration></yellow>.</green>";
 
     @ConfigKey("tab.afk-area-format")
     public String afkAreaTabFormat = "<player> <gray>[<aqua>AFK-ZONE</aqua>]</gray>";

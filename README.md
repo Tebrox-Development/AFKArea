@@ -2,7 +2,7 @@
   <img src="docs/assets/afkarea-banner.jpg" alt="AFKArea">
 </p>
 
-<h1 align="center">AFKArea</h1>
+<h1 align="center">AFK Area</h1>
 
 <p align="center">
   Configurable AFK areas, automatic idle handling, visibility control and weighted rewards for Paper servers.

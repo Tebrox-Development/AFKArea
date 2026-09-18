@@ -6,18 +6,18 @@ import de.tebrox.afkarea.display.AreaVisibilityService;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.reward.RewardSessionService;
+import de.tebrox.afkarea.session.AFKSessionHistoryService;
+import de.tebrox.afkarea.session.CompletedSession;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
+import java.util.logging.Logger;
 
 public final class AreaSessionService {
     private final AreaManager areaManager;
@@ -28,6 +28,7 @@ public final class AreaSessionService {
     private final MessageService messageService;
     private final AreaVisibilityService visibilityService;
     private final RewardSessionService rewardSessionService;
+    private final AFKSessionHistoryService sessionHistoryService;
 
     private final Map<UUID, String> currentAreas = new HashMap<>();
 
@@ -36,7 +37,7 @@ public final class AreaSessionService {
 
     private static final long ENTRY_SOURCE_TIMEOUT_NANOS = TimeUnit.SECONDS.toNanos(5);
 
-    public AreaSessionService(AreaManager areaManager, PlayerStateService stateService, ActivityService activityService, TabListService tabListService, Supplier<MessageConfig> messages, MessageService messageService, AreaVisibilityService visibilityService, RewardSessionService rewardSessionService) {
+    public AreaSessionService(AreaManager areaManager, PlayerStateService stateService, ActivityService activityService, TabListService tabListService, Supplier<MessageConfig> messages, MessageService messageService, AreaVisibilityService visibilityService, RewardSessionService rewardSessionService, AFKSessionHistoryService sessionHistoryService) {
         this.areaManager = areaManager;
         this.stateService = stateService;
         this.activityService = activityService;
@@ -45,6 +46,7 @@ public final class AreaSessionService {
         this.messageService = messageService;
         this.visibilityService = visibilityService;
         this.rewardSessionService = rewardSessionService;
+        this.sessionHistoryService = sessionHistoryService;
     }
 
     public String getAreaId(UUID playerId) {
@@ -90,7 +92,9 @@ public final class AreaSessionService {
         UUID playerId = player.getUniqueId();
 
         currentAreas.remove(playerId);
-        rewardSessionService.clear(playerId);
+        AreaEntrySource entrySource = entrySources.remove(playerId);
+        Optional<CompletedSession> completedSession = rewardSessionService.finish(playerId);
+
         stateService.setState(playerId, PlayerState.ACTIVE);
 
         visibilityService.refreshTarget(player);
@@ -99,15 +103,37 @@ public final class AreaSessionService {
 
         AreaData previous = areaManager.getArea(areaId);
 
-        entrySources.remove(playerId);
+        String duration = completedSession.map(session -> formatDuration(session.durationSeconds())).orElse("00:00:00");
 
-        messageService.send(player, messages.get().areaLeft, Placeholder.unparsed("area", previous == null ? areaId : displayName(previous)));
+        messageService.send(player, messages.get().areaLeft, Placeholder.unparsed("area", previous == null ? areaId : displayName(previous)), Placeholder.unparsed("duration", duration));
+        completedSession.ifPresent(session -> sessionHistoryService.save(player, session, entrySource));
+    }
+
+    public void handleQuit(Player player) {
+        UUID playerId = player.getUniqueId();
+
+        currentAreas.remove(playerId);
+        AreaEntrySource entrySource = entrySources.remove(playerId);
+        pendingEntrySources.remove(playerId);
+
+        Optional<CompletedSession> completedSession = rewardSessionService.finish(playerId);
+
+        completedSession.ifPresent(session -> sessionHistoryService.save(player, session, entrySource));
     }
 
     private String displayName(AreaData area) {
         String name = area.getName();
 
         return name == null || name.isBlank() ? area.getUniqueId() : name;
+    }
+
+    private String formatDuration(long seconds) {
+        long safeSeconds = Math.max(0L, seconds);
+        long hours = safeSeconds / 3600;
+        long minutes = (safeSeconds % 3600) / 60;
+        long secs = safeSeconds % 60;
+
+        return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, secs);
     }
 
     public void clear(UUID playerId) {

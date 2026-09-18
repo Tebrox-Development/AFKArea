@@ -23,6 +23,8 @@ import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.persistence.AFKAreaDatabaseSettings;
 import de.tebrox.afkarea.reward.RewardService;
 import de.tebrox.afkarea.reward.RewardSessionService;
+import de.tebrox.afkarea.session.AFKSessionData;
+import de.tebrox.afkarea.session.AFKSessionHistoryService;
 import de.tebrox.afkarea.state.PlayerState;
 import de.tebrox.afkarea.state.PlayerStateService;
 import de.tebrox.vertexCore.VertexCoreApi;
@@ -65,6 +67,9 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private Database<HouseholdData> householdDatabase;
     private HouseholdManager householdManager;
 
+    private Database<AFKSessionData> sessionDatabase;
+    private AFKSessionHistoryService sessionHistoryService;
+
     private WorldGuardIntegration worldGuardIntegration;
     private PlaceholderApiIntegration placeholderApiIntegration;
 
@@ -97,8 +102,10 @@ public final class AFKAreaPlugin extends JavaPlugin {
         AFKAreaDatabaseSettings databaseSettings = new AFKAreaDatabaseSettings(config);
         areaDatabase = new Database<>(this, databaseSettings, AreaData.class);
         householdDatabase = new Database<>(this, databaseSettings, HouseholdData.class);
+        sessionDatabase = new Database<>(this, databaseSettings, AFKSessionData.class);
         areaManager = new AreaManager(this, areaDatabase, worldGuardIntegration);
         householdManager = new HouseholdManager(this, householdDatabase);
+        sessionHistoryService = new AFKSessionHistoryService(this, sessionDatabase);
         areaTeleportService = new AreaTeleportService(areaManager);
 
         messageFile = new Config<>(this, MessageConfig.class);
@@ -116,7 +123,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         rewardSessionService = new RewardSessionService(this, areaManager, rewardService, () -> config, householdManager);
 
 
-        areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService, rewardSessionService);
+        areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService, rewardSessionService, sessionHistoryService);
         areaManager.setRuntimeChangeListener(() -> getServer().getOnlinePlayers().forEach(areaSessionService::sync));
         getServer().getPluginManager().registerEvents(new AreaSessionListener(areaSessionService), this);
         getServer().getPluginManager().registerEvents(new AreaVisibilityListener(this, visibilityService), this);

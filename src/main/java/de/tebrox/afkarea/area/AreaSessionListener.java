@@ -41,7 +41,7 @@ public final class AreaSessionListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) {
-        sessionService.clear(event.getPlayer().getUniqueId());
+        sessionService.handleQuit(event.getPlayer());
     }
 
     private boolean changedBlock(Location from, Location to) {

@@ -7,6 +7,7 @@ import de.tebrox.afkarea.config.AFKAreaConfig;
 import de.tebrox.afkarea.household.HouseholdManager;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
 import de.tebrox.afkarea.reward.data.RewardMilestoneData;
+import de.tebrox.afkarea.session.CompletedSession;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -54,7 +55,7 @@ public final class RewardSessionService {
     }
 
     public void begin(Player player, AreaData area) {
-        sessions.put(player.getUniqueId(), new Session(area.getUniqueId(), System.nanoTime()));
+        sessions.put(player.getUniqueId(), new Session(area.getUniqueId(), System.nanoTime(), System.currentTimeMillis()));
     }
 
     public void clear(UUID playerId) {
@@ -64,6 +65,18 @@ public final class RewardSessionService {
     public void clearAll() {
         sessions.clear();
     }
+
+    public Optional<CompletedSession> finish(UUID playerId) {
+        Session session = sessions.remove(playerId);
+        if(session == null) return Optional.empty();
+
+        return Optional.of(new CompletedSession(session.areaId, elapsedSeconds(session), session.startedAtEpochMillis, System.currentTimeMillis()));
+    }
+
+    private long elapsedSeconds(Session session) {
+        return TimeUnit.NANOSECONDS.toSeconds(Math.max(0L, System.nanoTime() - session.startedAt));
+    }
+
 
     private void tick() {
         long now = System.nanoTime();
@@ -196,8 +209,7 @@ public final class RewardSessionService {
         Session session = sessions.get(playerId);
         if(session == null) return OptionalLong.empty();
 
-        long elapsedNanos = Math.max(0L, System.nanoTime() - session.startedAt);
-        return OptionalLong.of(TimeUnit.NANOSECONDS.toSeconds(elapsedNanos));
+        return OptionalLong.of(elapsedSeconds(session));
     }
 
     public OptionalLong getNextRewardSeconds(UUID playerId) {
@@ -247,13 +259,15 @@ public final class RewardSessionService {
     private static final class Session {
         private final String areaId;
         private final long startedAt;
+        private final long startedAtEpochMillis;
         private long lastRewardAt;
 
         private final Set<Integer> completedMilestones = new HashSet<>();
 
-        private Session(String areaId, long startedAt) {
+        private Session(String areaId, long startedAt, long startedAtEpochMillis) {
             this.areaId = areaId;
             this.startedAt = startedAt;
+            this.startedAtEpochMillis = startedAtEpochMillis;
         }
     }
 
