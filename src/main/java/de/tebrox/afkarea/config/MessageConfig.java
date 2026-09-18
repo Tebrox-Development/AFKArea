@@ -252,4 +252,7 @@ public final class MessageConfig implements ConfigObject {
                     + "Last session: <white><last_session></white>\n"
                     + "Last area: <white><last_area></white>\n"
                     + "Last session ended: <white><last_ended></white></gray>";
+
+    @ConfigKey("display.bossbar.text")
+    public String bossBarText = "<gold>AFK Area</gold> <gray>•</gray> <yellow><session></yellow>";
 }

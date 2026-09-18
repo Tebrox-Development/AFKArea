@@ -7,6 +7,8 @@ import java.util.Set;
 
 public final class AFKAreaConfigValidator {
     private static final Set<String> SUPPORTED_DATABASE_BACKENDS = Set.of("json", "h2", "mysql");
+    private static final Set<String> SUPPORTED_BOSSBAR_COLORS = Set.of("pink", "blue", "red", "green", "yellow", "purple", "white");
+    private static final Set<String> SUPPORTED_BOSSBAR_STYLES = Set.of("progress", "notched-6", "notched-10", "notched-12", "notched-20");
 
     private AFKAreaConfigValidator() {}
 
@@ -38,6 +40,12 @@ public final class AFKAreaConfigValidator {
             if(config.databaseMysqlUrl == null || config.databaseMysqlUrl.isBlank()) errors.add("database.mysql.url must not be blank when database.backend is mysql");
             if(config.databaseMysqlUser == null || config.databaseMysqlUser.isBlank()) errors.add("database.mysql.user must not be blank when database.backend is mysql");
         }
+
+        String bossBarColor = config.bossBarColor == null ? "" : config.bossBarColor.trim().toLowerCase(Locale.ROOT);
+        if(!SUPPORTED_BOSSBAR_COLORS.contains(bossBarColor)) errors.add("display.bossbar.color '" + config.bossBarColor + "' is unsupported. Supported colors: " + String.join(", ", SUPPORTED_BOSSBAR_COLORS) + ".");
+
+        String bossBarStyle = config.bossBarStyle == null ? "" : config.bossBarStyle.trim().toLowerCase(Locale.ROOT);
+        if(!SUPPORTED_BOSSBAR_STYLES.contains(bossBarStyle)) errors.add("display.bossbar.style '" + config.bossBarStyle + "' is unsupported. Supported styles: " + String.join(", ", SUPPORTED_BOSSBAR_STYLES) + ".");
 
         return new ConfigValidationResult(errors, warnings);
     }

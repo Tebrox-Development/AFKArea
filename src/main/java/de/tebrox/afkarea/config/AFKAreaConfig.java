@@ -55,4 +55,13 @@ public final class AFKAreaConfig implements ConfigObject {
 
     @ConfigKey("database.mysql.password")
     public String databaseMysqlPassword = "";
+
+    @ConfigKey("display.bossbar.enabled")
+    public boolean bossBarEnabled = true;
+
+    @ConfigKey("display.bossbar.color")
+    public String bossBarColor = "yellow";
+
+    @ConfigKey("display.bossbar.style")
+    public String bossBarStyle = "progress";
 }

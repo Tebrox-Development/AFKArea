@@ -13,6 +13,7 @@ import de.tebrox.afkarea.config.ConfigValidationResult;
 import de.tebrox.afkarea.config.MessageConfig;
 import de.tebrox.afkarea.display.AreaVisibilityListener;
 import de.tebrox.afkarea.display.AreaVisibilityService;
+import de.tebrox.afkarea.display.BossBarDisplayService;
 import de.tebrox.afkarea.display.TabListService;
 import de.tebrox.afkarea.household.HouseholdData;
 import de.tebrox.afkarea.household.HouseholdManager;
@@ -78,6 +79,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
     private WorldGuardIntegration worldGuardIntegration;
     private PlaceholderApiIntegration placeholderApiIntegration;
 
+    private BossBarDisplayService bossBarDisplayService;
+
     @Override
     public void onEnable() {
         worldGuardIntegration = WorldGuardIntegration.detect(this);
@@ -131,6 +134,8 @@ public final class AFKAreaPlugin extends JavaPlugin {
         rewardService = new RewardService(this, () -> messages, messageService);
         rewardSessionService = new RewardSessionService(this, areaManager, rewardService, () -> config, householdManager);
 
+        bossBarDisplayService = new BossBarDisplayService(this, rewardSessionService, () -> config, () -> messages, messageService);
+
 
         areaSessionService = new AreaSessionService(areaManager, playerStateService, activityService, tabListService, () -> messages, messageService, visibilityService, rewardSessionService, sessionHistoryService, playerStatsService);
         areaManager.setRuntimeChangeListener(() -> getServer().getOnlinePlayers().forEach(areaSessionService::sync));
@@ -143,6 +148,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
         selectionService = new SelectionService();
         rewardSessionService.start();
+        bossBarDisplayService.start();
 
         idleTracker = new IdleTracker(this, activityService, playerStateService, () -> config, () -> messages, messageService, tabListService, areaTeleportService, areaSessionService);
         idleTracker.start();
@@ -169,6 +175,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         if(idleTracker != null) idleTracker.stop();
+        if(bossBarDisplayService != null) bossBarDisplayService.stop();
         if(rewardSessionService != null) rewardSessionService.stop();
 
         VertexCoreApi.get().commands().unregisterAll(this);
@@ -210,6 +217,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         config = reloadedConfig;
         messages = reloadedMessages;
 
+        bossBarDisplayService.refreshAll();
         visibilityService.refreshAll(getServer().getOnlinePlayers());
 
         areaManager.loadAsync();
@@ -259,4 +267,5 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public AFKPlayerStatsService playerStatsService() { return playerStatsService; }
     public HouseholdManager householdManager() { return householdManager; }
     public RewardSessionService rewardSessionService() { return rewardSessionService; }
+    public BossBarDisplayService bossBarDisplayService() { return bossBarDisplayService; }
 }
