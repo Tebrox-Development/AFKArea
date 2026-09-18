@@ -43,14 +43,23 @@ public final class AreaManager {
         database.loadObjectsAsyncMain(
                 loadedAreas -> {
                     if(generation != loadGeneration) return;
+                    Map<String, AreaData> previousAreas = new HashMap<>(areas);
+                    List<RuntimeArea> previousRuntimeAreas = new ArrayList<>(runtimeAreas);
+
                     loading = false;
 
                     try {
                         replaceCache(loadedAreas);
                     }catch(RuntimeException exception) {
+                        areas.clear();
+                        areas.putAll(previousAreas);
+
+                        runtimeAreas.clear();
+                        runtimeAreas.addAll(previousRuntimeAreas);
+                        
                         loaded = preserveCurrentCache;
 
-                        plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + exception.getMessage() : "Failed to loda AFK areas: " + exception.getMessage());
+                        plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + exception.getMessage() : "Failed to load AFK areas: " + exception.getMessage());
                         exception.printStackTrace();
                     }
                 },
@@ -60,7 +69,7 @@ public final class AreaManager {
                     loading = false;
                     loaded = preserveCurrentCache;
 
-                    plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + error.getMessage() : "Failed to loda AFK areas: " + error.getMessage());
+                    plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + error.getMessage() : "Failed to load AFK areas: " + error.getMessage());
                     error.printStackTrace();
                 });
     }
@@ -124,7 +133,7 @@ public final class AreaManager {
     }
 
     public void saveArea(AreaData area, Runnable onSuccess, Consumer<Throwable> onError) {
-        if(!loaded) {
+        if(!loaded || loading) {
             onError.accept(dataUnavailableException());
             return;
         }
@@ -145,7 +154,7 @@ public final class AreaManager {
     }
 
     public void deleteArea(String id, Runnable onSuccess, Consumer<Throwable> onError) {
-        if(!loaded) {
+        if(!loaded || loading) {
             onError.accept(dataUnavailableException());
             return;
         }

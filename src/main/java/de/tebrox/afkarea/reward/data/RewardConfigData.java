@@ -82,7 +82,7 @@ public final class RewardConfigData {
 
         if(rewards != null) {
             for (CommandRewardData reward : rewards) {
-                copy.rewards.add(reward.copy());
+                copy.rewards.add(reward == null ? null : reward.copy());
             }
         }
 
@@ -90,7 +90,7 @@ public final class RewardConfigData {
 
         if(milestones != null) {
             for (RewardMilestoneData milestone : milestones) {
-                copy.milestones.add(milestone.copy());
+                copy.milestones.add(milestone == null ? null : milestone.copy());
             }
         }
 
