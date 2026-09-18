@@ -23,7 +23,7 @@ public final class AreaManager {
     private final List<RuntimeArea> runtimeAreas = new ArrayList<>();
 
     private boolean loaded;
-    privat boolean loading;
+    private boolean loading;
     private long loadGeneration;
     private Runnable runtimeChangeListener = () -> {};
 
@@ -50,7 +50,7 @@ public final class AreaManager {
                     }catch(RuntimeException exception) {
                         loaded = preserveCurrentCache;
 
-                        plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + exception.getMessage() : "Failed to loda AFK areas: " + exception.get);
+                        plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + exception.getMessage() : "Failed to loda AFK areas: " + exception.getMessage());
                         exception.printStackTrace();
                     }
                 },
@@ -60,7 +60,7 @@ public final class AreaManager {
                     loading = false;
                     loaded = preserveCurrentCache;
 
-                    plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + error.getMessage() : "Failed to loda AFK areas: " + exception.get);
+                    plugin.getLogger().severe(preserveCurrentCache ? "Failed to reload AFK areas. The previous runtime cache remains active: " + error.getMessage() : "Failed to loda AFK areas: " + error.getMessage());
                     error.printStackTrace();
                 });
     }
