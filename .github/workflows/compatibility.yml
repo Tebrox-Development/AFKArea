@@ -109,4 +109,4 @@ jobs:
 
       - name: Verify against Paper 1.21.4 API
         if: ${{ hashFiles('pom.xml') != '' }}
-        run: mvn -B -ntp -Dpaper.version=1.21.4-R0.1-SNAPSHOT verify
+        run: mvn -B -ntp "-Dpaper.version=1.21.4-R0.1-SNAPSHOT" verify
