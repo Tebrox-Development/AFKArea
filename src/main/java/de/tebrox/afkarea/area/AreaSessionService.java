@@ -17,7 +17,6 @@ import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
-import java.util.logging.Logger;
 
 public final class AreaSessionService {
     private final AreaManager areaManager;

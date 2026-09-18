@@ -67,6 +67,14 @@ public final class AFKSessionData implements DataObject {
         this.startedAtEpochMillis = startedAtEpochMillis;
     }
 
+    public long getEndedAtEpochMillis() {
+        return endedAtEpochMillis;
+    }
+
+    public void setEndedAtEpochMillis(long endedAtEpochMillis) {
+        this.endedAtEpochMillis = endedAtEpochMillis;
+    }
+
     public String getEntrySource() {
         return entrySource;
     }

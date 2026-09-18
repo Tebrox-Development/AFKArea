@@ -1,7 +1,6 @@
 package de.tebrox.afkarea.session;
 
 import de.tebrox.afkarea.area.AreaEntrySource;
-import de.tebrox.afkarea.reward.RewardSessionService;
 import de.tebrox.vertexCore.database.Database;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -19,7 +18,7 @@ public final class AFKSessionHistoryService {
     public void save(Player player, CompletedSession session, AreaEntrySource entrySource) {
         String playerName = player.getName();
 
-        AFKSessionData data = new AFKSessionData(UUID.randomUUID().toString(), player.getUniqueId().toString(), session.areaId(), session.durationSeconds(), session.startedAtEpochMillis(), session.endedAtEpochMillis(), entrySource == null ? "UNKNOW" : entrySource.name());
+        AFKSessionData data = new AFKSessionData(UUID.randomUUID().toString(), player.getUniqueId().toString(), session.areaId(), session.durationSeconds(), session.startedAtEpochMillis(), session.endedAtEpochMillis(), entrySource == null ? "UNKNOWN" : entrySource.name());
         database.saveObjectAsyncMain(data, () -> {}, error -> {
             plugin.getLogger().severe("Failed to persist completed AFK area session for player '" + playerName + "': " + error.getMessage());
             error.printStackTrace();
