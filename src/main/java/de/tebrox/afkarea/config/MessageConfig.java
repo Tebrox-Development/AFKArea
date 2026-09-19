@@ -255,4 +255,9 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("display.bossbar.text")
     public String bossBarText = "<gold>AFK Area</gold> <gray>•</gray> <yellow><session></yellow>";
+
+    @ConfigKey("display.actionbar.text")
+    public String actionBarText = "<gray>Next reward in <aqua><next_reward></aqua></gray>";
+    @ConfigKey("display.actionbar.no-reward-text")
+    public String actionBarNoRewardText = "<gray>AFK Area <yellow><session></yellow></gray>";
 }

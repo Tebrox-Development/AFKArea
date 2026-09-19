@@ -19,6 +19,8 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Supplier;
 
+import static de.tebrox.afkarea.util.DurationFormatter.formatDuration;
+
 public final class AreaSessionService {
     private final AreaManager areaManager;
     private final PlayerStateService stateService;
@@ -127,15 +129,6 @@ public final class AreaSessionService {
         String name = area.getName();
 
         return name == null || name.isBlank() ? area.getUniqueId() : name;
-    }
-
-    private String formatDuration(long seconds) {
-        long safeSeconds = Math.max(0L, seconds);
-        long hours = safeSeconds / 3600;
-        long minutes = (safeSeconds % 3600) / 60;
-        long secs = safeSeconds % 60;
-
-        return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, secs);
     }
 
     public void clear(UUID playerId) {

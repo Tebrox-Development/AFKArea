@@ -28,6 +28,8 @@ import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 
+import static de.tebrox.afkarea.util.DurationFormatter.formatDuration;
+
 public final class AFKAreaCommands {
     private final AFKAreaPlugin plugin;
     private static final DateTimeFormatter STATS_DATE_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss", Locale.ROOT).withZone(ZoneId.systemDefault());
@@ -896,14 +898,6 @@ public final class AFKAreaCommands {
         }
 
         return null;
-    }
-
-    private String formatDuration(long seconds) {
-        long hours = seconds / 3600;
-        long minutes = (seconds % 3600) / 60;
-        long secs = seconds % 60;
-
-        return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, secs);
     }
 
     private String formatTimestamp(long epochMillis) {

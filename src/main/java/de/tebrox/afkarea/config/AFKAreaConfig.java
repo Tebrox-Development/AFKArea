@@ -64,4 +64,7 @@ public final class AFKAreaConfig implements ConfigObject {
 
     @ConfigKey("display.bossbar.style")
     public String bossBarStyle = "progress";
+
+    @ConfigKey("display.actionbar.enabled")
+    public boolean actionBarEnabled = true;
 }

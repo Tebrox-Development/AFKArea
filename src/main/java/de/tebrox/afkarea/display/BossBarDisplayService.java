@@ -6,7 +6,6 @@ import de.tebrox.afkarea.message.MessageService;
 import de.tebrox.afkarea.reward.RewardSessionService;
 import net.kyori.adventure.bossbar.BossBar;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
@@ -52,7 +51,6 @@ public final class BossBarDisplayService {
 
     private void tick() {
         cleanupOfflinePlayers();
-
         AFKAreaConfig currentConfig = config.get();
 
         if(!currentConfig.bossBarEnabled) {
@@ -61,25 +59,24 @@ public final class BossBarDisplayService {
         }
 
         for(Player player : plugin.getServer().getOnlinePlayers()) {
-            Optional<RewardSessionService.RewardProgress> progress = rewardSessionService.getRewardProgress(player.getUniqueId());
-            if(progress.isEmpty()) {
-                hide(player);
-                continue;
-            }
+           Optional<AFKDisplayContext> context = AFKDisplayContext.resolve(rewardSessionService, player.getUniqueId());
+           if(context.isEmpty()) {
+               hide(player);
+               continue;
+           }
 
-            showOrUpdate(player, progress.get(), currentConfig);
+            showOrUpdate(player, context.get(), currentConfig);
         }
     }
 
-    private void showOrUpdate(Player player, RewardSessionService.RewardProgress progress, AFKAreaConfig currentConfig) {
-        Component title = messageService.parse(messages.get().bossBarText, Placeholder.unparsed("session", formatDuration(progress.sessionSeconds())), Placeholder.unparsed("next_reward", formatDuration(progress.remainingSeconds())), Placeholder.unparsed("progress_percent", Long.toString(Math.round(progress.progress() * 100.0D))));
-        float barProgress = (float) Math.max(0.0D, Math.min(1.0D, progress.progress()));
+    private void showOrUpdate(Player player, AFKDisplayContext context, AFKAreaConfig currentConfig) {
+        Component title = messageService.parse(messages.get().bossBarText, context.placeholders());
         BossBar.Color color = parseColor(currentConfig.bossBarColor);
         BossBar.Overlay overlay = parseOverlay(currentConfig.bossBarStyle);
         BossBar bossBar = bossBars.get(player.getUniqueId());
 
         if(bossBar == null) {
-            bossBar = BossBar.bossBar(title, barProgress, color, overlay);
+            bossBar = BossBar.bossBar(title, context.progress(), color, overlay);
             bossBars.put(player.getUniqueId(), bossBar);
             player.showBossBar(bossBar);
 
@@ -87,7 +84,7 @@ public final class BossBarDisplayService {
         }
 
         bossBar.name(title);
-        bossBar.progress(barProgress);
+        bossBar.progress(context.progress());
         bossBar.color(color);
         bossBar.overlay(overlay);
     }
@@ -131,13 +128,5 @@ public final class BossBarDisplayService {
         }catch(IllegalArgumentException exception) {
             return BossBar.Overlay.PROGRESS;
         }
-    }
-
-    private String formatDuration(long seconds) {
-        long hours = seconds / 3600;
-        long minutes = (seconds % 3600) / 60;
-        long secs = seconds % 60;
-
-        return String.format(Locale.ROOT, "%02d:%02d:%02d", hours, minutes, secs);
     }
 }
