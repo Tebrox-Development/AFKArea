@@ -4,6 +4,7 @@ import de.tebrox.afkarea.area.AreaData;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
 import de.tebrox.afkarea.reward.data.CommandRewardData;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
+import de.tebrox.afkarea.reward.data.RewardMilestoneData;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 
@@ -454,6 +455,263 @@ public final class RewardCommandHandler {
         return reward.getCommands().stream().anyMatch(command -> command != null && !command.isBlank());
     }
 
+    public void interval(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminIntervalUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        int seconds;
+
+        try {
+            seconds = Integer.parseInt(args[1]);
+        }catch(NumberFormatException exception) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidSeconds);
+            return;
+        }
+
+        if(seconds <= 0) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidSeconds);
+            return;
+        }
+
+        RewardConfigEditTarget target = editConfigTarget(ctx, areaId);
+
+        if(target == null) return;
+        int rolls = target.config().getRolls();
+        if(rolls <= 0) rolls = 1;
+
+        if(args.length >= 3) {
+            try {
+                rolls = Integer.parseInt(args[2]);
+            }catch(NumberFormatException exception) {
+                plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidRolls);
+                return;
+            }
+
+            if(rolls <= 0) {
+                plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidRolls);
+                return;
+            }
+        }
+
+        target.config().setScheduleType("interval");
+        target.config().setIntervalSeconds(seconds);
+        target.config().setRolls(rolls);
+
+        int finalRolls = rolls;
+
+        saveSchedule(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminIntervalSet,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("seconds", Integer.toString(seconds)),
+                        Placeholder.unparsed("rolls", Integer.toString(finalRolls)))
+        );
+    }
+
+    public void milestoneList(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if(args.length < 1) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneListUsage);
+            return;
+        }
+
+        String areaId = args[0];
+
+        AreaData area = plugin.areaManager().getArea(areaId);
+        if(area == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", areaId));
+            return;
+        }
+
+        RewardConfigData config = area.getRewards();
+        if(config == null || config.getMilestones() == null || config.getMilestones().isEmpty()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneListEmpty, Placeholder.unparsed("area", areaId));
+            return;
+        }
+
+        List<String> entries =
+                config.getMilestones()
+                        .stream()
+                        .filter(Objects::nonNull)
+                        .sorted(Comparator.comparingInt(RewardMilestoneData::getAfterSeconds))
+                        .map(milestone -> "- " + milestone.getAfterSeconds() + "s | rolls " + milestone.getRolls())
+                        .toList();
+
+        plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneList,
+                Placeholder.unparsed("area", areaId),
+                Placeholder.unparsed("count", Integer.toString(entries.size())),
+                Placeholder.unparsed("milestones", String.join("\n", entries))
+        );
+    }
+
+    public void milestoneAdd(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneAddUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        int seconds;
+
+        try {
+            seconds = Integer.parseInt(args[1]);
+        }catch(NumberFormatException exception) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidSeconds);
+            return;
+        }
+
+        if(seconds <= 0) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidSeconds);
+            return;
+        }
+
+        int rolls = 1;
+        if(args.length >= 3) {
+            try {
+                rolls = Integer.parseInt(args[2]);
+            }catch(NumberFormatException exception) {
+                plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidRolls);
+                return;
+            }
+
+            if(rolls <= 0) {
+                plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidRolls);
+                return;
+            }
+        }
+
+        RewardConfigEditTarget target = editConfigTarget(ctx, areaId);
+        if(target == null) return;
+
+        List<RewardMilestoneData> milestones = new ArrayList<>(target.config().getMilestones() == null ? List.of() : target.config().getMilestones());
+        boolean exists = milestones.stream().filter(Objects::nonNull).anyMatch(milestone -> milestone.getAfterSeconds() == seconds);
+
+        if(exists) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneExists, Placeholder.unparsed("seconds", Integer.toString(seconds)));
+            return;
+        }
+
+        milestones.add(new RewardMilestoneData(seconds, rolls)
+        );
+
+        milestones.sort(Comparator.comparingInt(RewardMilestoneData::getAfterSeconds)
+        );
+
+        target.config().setMilestones(milestones);
+        target.config().setScheduleType("milestones");
+        int finalRolls = rolls;
+
+        saveSchedule(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminMilestoneAdded,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("seconds", Integer.toString(seconds)),
+                        Placeholder.unparsed("rolls", Integer.toString(finalRolls)))
+        );
+    }
+
+    public void milestoneRemove(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneRemoveUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        int seconds;
+        try {
+            seconds = Integer.parseInt(args[1]);
+        }catch(NumberFormatException exception) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidSeconds);
+            return;
+        }
+
+        RewardConfigEditTarget target = editConfigTarget(ctx, areaId);
+        if(target == null) return;
+
+        List<RewardMilestoneData> milestones = new ArrayList<>(target.config().getMilestones() == null ? List.of() : target.config().getMilestones());
+
+        boolean exists = milestones.stream().filter(Objects::nonNull).anyMatch(milestone -> milestone.getAfterSeconds() == seconds);
+        if(!exists) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneNotFound, Placeholder.unparsed("seconds", Integer.toString(seconds)));
+            return;
+        }
+
+        boolean activeMilestoneSchedule = "milestones".equalsIgnoreCase(target.config().getScheduleType());
+        if(activeMilestoneSchedule && milestones.stream().filter(Objects::nonNull).count() == 1L) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneLastActive);
+            return;
+        }
+
+        milestones.removeIf(milestone -> milestone != null && milestone.getAfterSeconds() == seconds);
+        target.config().setMilestones(milestones);
+        Runnable success = () -> plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMilestoneRemoved, Placeholder.unparsed("area", areaId), Placeholder.unparsed("seconds", Integer.toString(seconds)));
+
+        if(activeMilestoneSchedule) {
+            saveSchedule(ctx, target.area(), areaId, success);
+        }else{
+            save(ctx, target.area(), areaId, success);
+        }
+    }
+
+    public void duplicates(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminDuplicatesUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        boolean allowDuplicates;
+        if("true".equalsIgnoreCase(args[1])) {
+            allowDuplicates = true;
+        }else if("false".equalsIgnoreCase(args[1])) {
+            allowDuplicates = false;
+        }else{
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidDuplicates);
+            return;
+        }
+
+        RewardConfigEditTarget target = editConfigTarget(ctx, areaId);
+        if(target == null) return;
+        target.config().setAllowDuplicates(allowDuplicates);
+
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminDuplicatesSet,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("duplicates", Boolean.toString(allowDuplicates)))
+        );
+    }
+
+    private RewardConfigEditTarget editConfigTarget(CommandContext ctx, String areaId) {
+        AreaData current = plugin.areaManager().getArea(areaId);
+        if(current == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", areaId));
+            return null;
+        }
+
+        AreaData updated = current.copy();
+        RewardConfigData config = updated.getRewards();
+        if(config == null) {
+            config = new RewardConfigData();
+            updated.setRewards(config);
+        }
+
+        return new RewardConfigEditTarget(updated, config);
+    }
+
+    private void saveSchedule(CommandContext ctx, AreaData area, String areaId, Runnable onSuccess) {
+        save(ctx, area, areaId, () -> {plugin.rewardSessionService().resetRewardProgress(areaId);onSuccess.run();});
+    }
+
+    private record RewardConfigEditTarget(AreaData area, RewardConfigData config) {}
     private record RewardEditTarget(AreaData area, CommandRewardData reward
     ) {}
 }

@@ -368,4 +368,56 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reward.admin.message-set")
     public String rewardAdminMessageSet = "<green>Updated the message of reward '<reward>' in AFK area '<area>': <message></green>";
+
+    @ConfigKey("reward.admin.interval-usage")
+    public String rewardAdminIntervalUsage = "<red>Usage: /afkarea reward interval <area> <seconds> [rolls]</red>";
+
+    @ConfigKey("reward.admin.invalid-seconds")
+    public String rewardAdminInvalidSeconds = "<red>Seconds must be a whole number greater than 0.</red>";
+
+    @ConfigKey("reward.admin.invalid-rolls")
+    public String rewardAdminInvalidRolls = "<red>Rolls must be a whole number greater than 0.</red>";
+
+    @ConfigKey("reward.admin.interval-set")
+    public String rewardAdminIntervalSet = "<green>Set reward schedule of AFK area '<area>' to every <seconds> seconds with <rolls> roll(s).</green>";
+
+    @ConfigKey("reward.admin.milestone-list-usage")
+    public String rewardAdminMilestoneListUsage = "<red>Usage: /afkarea reward milestone list <area></red>";
+
+    @ConfigKey("reward.admin.milestone-add-usage")
+    public String rewardAdminMilestoneAddUsage = "<red>Usage: /afkarea reward milestone add <area> <seconds> [rolls]</red>";
+
+    @ConfigKey("reward.admin.milestone-remove-usage")
+    public String rewardAdminMilestoneRemoveUsage = "<red>Usage: /afkarea reward milestone remove <area> <seconds></red>";
+
+    @ConfigKey("reward.admin.milestone-list-empty")
+    public String rewardAdminMilestoneListEmpty = "<yellow>AFK area '<area>' has no configured reward milestones.</yellow>";
+
+    @ConfigKey("reward.admin.milestone-list")
+    public String rewardAdminMilestoneList = "<gold>Reward milestones for '<area>' (<count>):</gold>\n"
+                    + "<gray><milestones></gray>";
+
+    @ConfigKey("reward.admin.milestone-exists")
+    public String rewardAdminMilestoneExists = "<red>A reward milestone already exists at <seconds> seconds.</red>";
+
+    @ConfigKey("reward.admin.milestone-added")
+    public String rewardAdminMilestoneAdded = "<green>Added reward milestone at <seconds> seconds with <rolls> roll(s) to AFK area '<area>'.</green>";
+
+    @ConfigKey("reward.admin.milestone-not-found")
+    public String rewardAdminMilestoneNotFound = "<red>No reward milestone exists at <seconds> seconds.</red>";
+
+    @ConfigKey("reward.admin.milestone-last-active")
+    public String rewardAdminMilestoneLastActive = "<red>The last milestone cannot be removed while the milestone schedule is active. Switch the area to an interval schedule first.</red>";
+
+    @ConfigKey("reward.admin.milestone-removed")
+    public String rewardAdminMilestoneRemoved = "<green>Removed the reward milestone at <seconds> seconds from AFK area '<area>'.</green>";
+
+    @ConfigKey("reward.admin.duplicates-usage")
+    public String rewardAdminDuplicatesUsage = "<red>Usage: /afkarea reward duplicates <area> <true|false></red>";
+
+    @ConfigKey("reward.admin.invalid-duplicates")
+    public String rewardAdminInvalidDuplicates = "<red>Allow duplicates must be either true or false.</red>";
+
+    @ConfigKey("reward.admin.duplicates-set")
+    public String rewardAdminDuplicatesSet = "<green>Allow duplicate reward selections for AFK area '<area>': <duplicates>.</green>";
 }

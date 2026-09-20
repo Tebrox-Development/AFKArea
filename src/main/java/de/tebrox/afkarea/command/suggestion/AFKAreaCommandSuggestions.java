@@ -196,4 +196,49 @@ public final class AFKAreaCommandSuggestions {
 
         return indexes;
     }
+
+    public List<String> rewardNestedAreaIds(CommandSender sender, String[] args, String permission) {
+        if(!sender.hasPermission(permission)) return List.of();
+        if(args.length > 4) return List.of();
+
+        String token = args.length >= 4 ? args[3] : "";
+        String normalized = token.toLowerCase(Locale.ROOT);
+
+        return plugin.areaManager()
+                .getAreas()
+                .stream()
+                .map(AreaData::getUniqueId)
+                .filter(Objects::nonNull)
+                .filter(id -> !id.isBlank())
+                .filter(id -> id.toLowerCase(Locale.ROOT).startsWith(normalized))
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+    }
+
+    public List<String> rewardDuplicates(CommandSender sender, String[] args, String permission) {
+        if(args.length <= 3) return rewardAreaIds(sender, args, permission);
+        if(!sender.hasPermission(permission) || args.length > 4) return List.of();
+        String token = args[3].toLowerCase(Locale.ROOT);
+
+        return List.of("true", "false").stream().filter(value -> value.startsWith(token)).toList();
+    }
+
+    public List<String> rewardMilestoneRemove(CommandSender sender, String[] args, String permission) {
+        if(args.length <= 4) return rewardNestedAreaIds(sender, args, permission);
+        if(!sender.hasPermission(permission) || args.length > 5) return List.of();
+
+        AreaData area = plugin.areaManager().getArea(args[3]);
+        if(area == null || area.getRewards() == null || area.getRewards().getMilestones() == null) return List.of();
+
+        String token = args[4];
+
+        return area.getRewards()
+                .getMilestones()
+                .stream()
+                .filter(Objects::nonNull)
+                .map(milestone -> Integer.toString(milestone.getAfterSeconds()))
+                .filter(value -> value.startsWith(token))
+                .sorted()
+                .toList();
+    }
 }

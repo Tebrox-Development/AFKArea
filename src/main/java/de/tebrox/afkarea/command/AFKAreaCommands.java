@@ -249,6 +249,41 @@ public final class AFKAreaCommands {
         rewards.message(ctx);
     }
 
+    @VSub("afkarea reward interval")
+    @VDesc("Configure an interval reward schedule")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardInterval(CommandContext ctx) {
+        rewards.interval(ctx);
+    }
+
+    @VSub("afkarea reward milestone list")
+    @VDesc("List reward milestones")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardMilestoneList(CommandContext ctx) {
+        rewards.milestoneList(ctx);
+    }
+
+    @VSub("afkarea reward milestone add")
+    @VDesc("Add a reward milestone")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardMilestoneAdd(CommandContext ctx) {
+        rewards.milestoneAdd(ctx);
+    }
+
+    @VSub("afkarea reward milestone remove")
+    @VDesc("Remove a reward milestone")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardMilestoneRemove(CommandContext ctx) {
+        rewards.milestoneRemove(ctx);
+    }
+
+    @VSub("afkarea reward duplicates")
+    @VDesc("Configure duplicate reward selections")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardDuplicates(CommandContext ctx) {
+        rewards.duplicates(ctx);
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -385,5 +420,30 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea reward message")
     public List<String> rewardMessageSuggest(CommandSender sender, String alias, String[] args) {
         return suggestions.rewardIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward interval")
+    public List<String> rewardIntervalSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardAreaIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward milestone list")
+    public List<String> rewardMilestoneListSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardNestedAreaIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward milestone add")
+    public List<String> rewardMilestoneAddSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardNestedAreaIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward milestone remove")
+    public List<String> rewardMilestoneRemoveSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardMilestoneRemove(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward duplicates")
+    public List<String> rewardDuplicatesSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardDuplicates(sender, args, AFKAreaPermissions.ADMIN_REWARD);
     }
 }
