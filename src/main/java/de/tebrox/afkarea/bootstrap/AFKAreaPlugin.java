@@ -85,7 +85,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public void onEnable() {
         worldGuardIntegration = WorldGuardIntegration.detect(this);
         placeholderApiIntegration = PlaceholderApiIntegration.detect(this);
-        tabIntegration = TabIntegration.detec(this);
+        tabIntegration = TabIntegration.detect(this);
 
         if(worldGuardIntegration.isAvailable()) {
             getLogger().info("WorldGuard integration is available");

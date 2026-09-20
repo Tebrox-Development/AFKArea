@@ -5,6 +5,7 @@ import de.tebrox.afkarea.reward.data.CommandRewardData;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.function.Predicate;
 import java.util.random.RandomGenerator;
 
@@ -12,7 +13,7 @@ public final class RewardPool {
     private final RandomGenerator random;
 
     public RewardPool() {
-        this(RandomGenerator.getDefault());
+        this(new Random());
     }
 
     public RewardPool(RandomGenerator random) {

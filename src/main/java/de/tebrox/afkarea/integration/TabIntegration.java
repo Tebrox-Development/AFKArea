@@ -13,7 +13,7 @@ public final class TabIntegration implements PluginIntegration {
         this.plugin = plugin;
     }
 
-    public static TabIntegration detec(JavaPlugin owner) {
+    public static TabIntegration detect(JavaPlugin owner) {
         Objects.requireNonNull(owner, "plugin");
         Plugin plugin = owner.getServer().getPluginManager().getPlugin(PLUGIN_NAME);
 
