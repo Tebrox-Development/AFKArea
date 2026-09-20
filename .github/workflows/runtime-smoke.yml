@@ -83,7 +83,7 @@ jobs:
           echo "docs_only=${docs_only}" >> "${GITHUB_OUTPUT}"
 
   runtime-smoke:
-    name: Paper 26.2 / ${{ matrix.stack }}
+    name: Paper ${{ matrix.paper_version }} / ${{ matrix.stack }} / Java ${{ matrix.runtime_java }}
     needs: classify
     if: ${{ always() && (needs.classify.result != 'success' || needs.classify.outputs.docs_only != 'true') }}
     runs-on: [self-hosted, X64, resource-heavy]
@@ -93,15 +93,33 @@ jobs:
       matrix:
         include:
           - stack: VertexCore
+            paper_version: '1.21.4'
+            paper_build: '232'
+            runtime_java: '21'
+            enable_worldguard: 'false'
+          - stack: VertexCore
+            paper_version: '26.2'
+            paper_build: '121'
+            runtime_java: '25'
             enable_worldguard: 'false'
           - stack: VertexCore + WorldGuard
+            paper_version: '26.2'
+            paper_build: '121'
+            runtime_java: '25'
             enable_worldguard: 'true'
 
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
-      - name: Set up Java 25
+      - name: Set up Java 21 runtime
+        if: ${{ matrix.runtime_java == '21' }}
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Java 25 build toolchain
         uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95
         with:
           distribution: temurin
@@ -113,8 +131,9 @@ jobs:
 
       - name: Runtime smoke
         env:
-          PAPER_VERSION: '26.2'
-          PAPER_BUILD: '121'
+          PAPER_VERSION: ${{ matrix.paper_version }}
+          PAPER_BUILD: ${{ matrix.paper_build }}
+          RUNTIME_JAVA_VERSION: ${{ matrix.runtime_java }}
           VERTEXCORE_VERSION: 'v1.1.0'
           ENABLE_WORLDGUARD: ${{ matrix.enable_worldguard }}
           WORLDGUARD_VERSION: '7.0.18'

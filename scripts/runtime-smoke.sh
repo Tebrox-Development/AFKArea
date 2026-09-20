@@ -3,6 +3,7 @@ set -euo pipefail
 
 PAPER_VERSION="${PAPER_VERSION:-26.2}"
 PAPER_BUILD="${PAPER_BUILD:-121}"
+RUNTIME_JAVA_VERSION="${RUNTIME_JAVA_VERSION:-25}"
 VERTEXCORE_VERSION="${VERTEXCORE_VERSION:-v1.1.0}"
 ENABLE_WORLDGUARD="${ENABLE_WORLDGUARD:-false}"
 WORLDGUARD_VERSION="${WORLDGUARD_VERSION:-7.0.18}"
@@ -16,7 +17,7 @@ if [[ "${ENABLE_WORLDGUARD}" == "true" ]]; then
   RUNTIME_SUFFIX="worldguard"
 fi
 
-RUNTIME_DIR="${ROOT_DIR}/target/runtime-smoke-${PAPER_VERSION}-${PAPER_BUILD}-${RUNTIME_SUFFIX}"
+RUNTIME_DIR="${ROOT_DIR}/target/runtime-smoke-${PAPER_VERSION}-${PAPER_BUILD}-java${RUNTIME_JAVA_VERSION}-${RUNTIME_SUFFIX}"
 SERVER_DIR="${RUNTIME_DIR}/server"
 DEPENDENCY_DIR="${RUNTIME_DIR}/dependencies"
 
@@ -31,6 +32,22 @@ FINAL_NAME="$(
 )"
 
 PLUGIN_JAR="${ROOT_DIR}/target/${FINAL_NAME}.jar"
+
+JAVA_BIN="$(command -v java)"
+
+if [[ "${RUNTIME_JAVA_VERSION}" == "21" ]]; then
+  if [[ -z "${JAVA_HOME_21_X64:-}" || ! -x "${JAVA_HOME_21_X64}/bin/java" ]]; then
+    echo "Java 21 runtime is not available via JAVA_HOME_21_X64." >&2
+    exit 1
+  fi
+  JAVA_BIN="${JAVA_HOME_21_X64}/bin/java"
+elif [[ "${RUNTIME_JAVA_VERSION}" != "25" ]]; then
+  echo "Unsupported runtime Java version: ${RUNTIME_JAVA_VERSION}" >&2
+  exit 1
+fi
+
+echo "Runtime Java:"
+"${JAVA_BIN}" -version
 
 rm -rf "${RUNTIME_DIR}"
 mkdir -p "${SERVER_DIR}/plugins" "${DEPENDENCY_DIR}"
@@ -164,7 +181,7 @@ pushd "${SERVER_DIR}" >/dev/null
 
 exec 3<>console.in
 
-java \
+"${JAVA_BIN}" \
   -Xms512M \
   -Xmx1024M \
   -jar paper.jar \
