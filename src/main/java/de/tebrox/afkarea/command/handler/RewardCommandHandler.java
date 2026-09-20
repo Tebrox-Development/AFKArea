@@ -336,6 +336,101 @@ public final class RewardCommandHandler {
         );
     }
 
+    public void weight(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if(args.length < 3) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminWeightUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String rewardId = args[1];
+        double weight;
+
+        try {
+            weight = Double.parseDouble(args[2]);
+        }catch(NumberFormatException exception) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidWeight);
+            return;
+        }
+
+        if(!Double.isFinite(weight) || weight <= 0.0D) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidWeight
+            );
+            return;
+        }
+
+        RewardEditTarget target = editTarget(ctx, areaId, rewardId);
+
+        if(target == null) return;
+        target.reward().setWeight(weight);
+
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminWeightSet, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId), Placeholder.unparsed("weight", Double.toString(weight)))
+        );
+    }
+
+    public void permission(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 3) {plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminPermissionUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String rewardId = args[1];
+        String permission = args[2].trim();
+
+        if(permission.isBlank()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminPermissionUsage);
+            return;
+        }
+
+        RewardEditTarget target = editTarget(ctx, areaId, rewardId);
+        if(target == null) return;
+
+        String storedPermission = "none".equalsIgnoreCase(permission) ? null : permission;
+        target.reward().setPermission(storedPermission);
+
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminPermissionSet,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("reward", rewardId),
+                        Placeholder.unparsed("permission", storedPermission == null ? "none" : storedPermission))
+        );
+    }
+
+    public void message(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 3) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMessageUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String rewardId = args[1];
+
+        String message = String.join(" ", Arrays.copyOfRange(args, 2, args.length)).trim();
+
+        if(message.isBlank()) {plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminMessageUsage);
+            return;
+        }
+
+        RewardEditTarget target = editTarget(ctx, areaId, rewardId);
+        if(target == null) return;
+
+        String storedMessage = "none".equalsIgnoreCase(message) ? null : message;
+        target.reward().setMessage(storedMessage);
+
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminMessageSet,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("reward", rewardId),
+                        Placeholder.unparsed("message", storedMessage == null ? "default" : storedMessage))
+        );
+    }
+
     private RewardEditTarget editTarget(CommandContext ctx, String areaId, String rewardId) {
         AreaData current = plugin.areaManager().getArea(areaId);
         if(current == null) {

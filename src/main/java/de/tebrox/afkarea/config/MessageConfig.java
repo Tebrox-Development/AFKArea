@@ -347,4 +347,25 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reward.admin.save-failed")
     public String rewardAdminSaveFailed = "<red>Failed to update rewards for AFK area '<area>'. Check the server console.</red>";
+
+    @ConfigKey("reward.admin.weight-usage")
+    public String rewardAdminWeightUsage = "<red>Usage: /afkarea reward weight <area> <id> <weight></red>";
+
+    @ConfigKey("reward.admin.invalid-weight")
+    public String rewardAdminInvalidWeight = "<red>Reward weight must be a finite number greater than 0.</red>";
+
+    @ConfigKey("reward.admin.weight-set")
+    public String rewardAdminWeightSet = "<green>Set weight of reward '<reward>' in AFK area '<area>' to <weight>.</green>";
+
+    @ConfigKey("reward.admin.permission-usage")
+    public String rewardAdminPermissionUsage = "<red>Usage: /afkarea reward permission <area> <id> <permission|none></red>";
+
+    @ConfigKey("reward.admin.permission-set")
+    public String rewardAdminPermissionSet = "<green>Set permission of reward '<reward>' in AFK area '<area>' to '<permission>'.</green>";
+
+    @ConfigKey("reward.admin.message-usage")
+    public String rewardAdminMessageUsage = "<red>Usage: /afkarea reward message <area> <id> <message|none></red>";
+
+    @ConfigKey("reward.admin.message-set")
+    public String rewardAdminMessageSet = "<green>Updated the message of reward '<reward>' in AFK area '<area>': <message></green>";
 }

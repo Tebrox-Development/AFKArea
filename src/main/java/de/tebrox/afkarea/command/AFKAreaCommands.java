@@ -228,6 +228,27 @@ public final class AFKAreaCommands {
         rewards.commandRemove(ctx);
     }
 
+    @VSub("afkarea reward weight")
+    @VDesc("Set the weight of a reward")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardWeight(CommandContext ctx) {
+        rewards.weight(ctx);
+    }
+
+    @VSub("afkarea reward permission")
+    @VDesc("Set the permission of a reward")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardPermission(CommandContext ctx) {
+        rewards.permission(ctx);
+    }
+
+    @VSub("afkarea reward message")
+    @VDesc("Set the message of a reward")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardMessage(CommandContext ctx) {
+        rewards.message(ctx);
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -349,5 +370,20 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea reward command remove")
     public List<String> rewardCommandRemoveSuggest(CommandSender sender, String alias, String[] args) {
         return suggestions.rewardCommandRemove(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward weight")
+    public List<String> rewardWeightSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward permission")
+    public List<String> rewardPermissionSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward message")
+    public List<String> rewardMessageSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
     }
 }
