@@ -19,6 +19,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
         <paper.version>26.2.build.121-stable</paper.version>
+        <junit.version>5.11.4</junit.version>
         <vertexcore.version>v1.1.0</vertexcore.version>
         <bstats.version>3.2.1</bstats.version>
         <worldguard.version>7.0.18</worldguard.version>
@@ -58,6 +59,13 @@
             <artifactId>paper-api</artifactId>
             <version>${paper.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
