@@ -427,4 +427,19 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reward.admin.default-message-set")
     public String rewardAdminDefaultMessageSet = "<green>Updated the default reward message of AFK area '<area>': <message></green>";
+
+    @ConfigKey("display.admin.usage")
+    public String displayAdminUsage = "<red>Usage: /afkarea display <bossbar|actionbar> <on|off></red>";
+
+    @ConfigKey("display.admin.invalid-type")
+    public String displayAdminInvalidType = "<red>Display type must be either bossbar or actionbar.</red>";
+
+    @ConfigKey("display.admin.invalid-state")
+    public String displayAdminInvalidState = "<red>Display state must be either on or off.</red>";
+
+    @ConfigKey("display.admin.updated")
+    public String displayAdminUpdated = "<green>AFKArea <display> display is now <state>.</green>";
+
+    @ConfigKey("display.admin.save-failed")
+    public String displayAdminSaveFailed = "<red>Failed to save the display setting. Check the server console.</red>";
 }

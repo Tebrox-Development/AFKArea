@@ -3,10 +3,7 @@ package de.tebrox.afkarea.command;
 import de.tebrox.afkarea.area.AreaTeleportService;
 import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
-import de.tebrox.afkarea.command.handler.AreaAdminCommandHandler;
-import de.tebrox.afkarea.command.handler.DiagnosticsCommandHandler;
-import de.tebrox.afkarea.command.handler.HouseholdCommandHandler;
-import de.tebrox.afkarea.command.handler.RewardCommandHandler;
+import de.tebrox.afkarea.command.handler.*;
 import de.tebrox.afkarea.command.suggestion.AFKAreaCommandSuggestions;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
@@ -24,6 +21,7 @@ public final class AFKAreaCommands {
     private final HouseholdCommandHandler household;
     private final AFKAreaCommandSuggestions suggestions;
     private final RewardCommandHandler rewards;
+    private final DisplayCommandHandler display;
 
 
     public AFKAreaCommands(AFKAreaPlugin plugin) {
@@ -33,6 +31,7 @@ public final class AFKAreaCommands {
         this.household = new HouseholdCommandHandler(plugin);
         this.suggestions = new AFKAreaCommandSuggestions(plugin);
         this.rewards = new RewardCommandHandler(plugin);
+        this.display = new DisplayCommandHandler(plugin);
     }
 
     @VCommand("afkarea")
@@ -291,6 +290,13 @@ public final class AFKAreaCommands {
         rewards.defaultMessage(ctx);
     }
 
+    @VSub("afkarea display")
+    @VDesc("Enable or disable AFK area displays")
+    @VPerm(AFKAreaPermissions.ADMIN_DISPLAY)
+    public void display(CommandContext ctx) {
+        display.display(ctx);
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -457,5 +463,10 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea reward defaultmessage")
     public List<String> rewardDefaultMessageSuggest(CommandSender sender, String alias, String[] args) {
         return suggestions.rewardDefaultMessage(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea display")
+    public List<String> displaySuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.display(sender, args, AFKAreaPermissions.ADMIN_DISPLAY);
     }
 }

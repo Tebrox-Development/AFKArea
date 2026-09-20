@@ -259,4 +259,20 @@ public final class AFKAreaCommandSuggestions {
 
         return "none".startsWith(token) ? List.of("none") : List.of();
     }
+
+    public List<String> display(CommandSender sender, String[] args, String permission) {
+        if(!sender.hasPermission(permission)) return List.of();
+
+        if(args.length <= 2) {
+            String token = args.length >= 2 ? args[1].toLowerCase(Locale.ROOT) : "";
+            return List.of("bossbar", "actionbar").stream().filter(value -> value.startsWith(token)).toList();
+        }
+
+        if(args.length == 3) {
+            String token = args[2].toLowerCase(Locale.ROOT);
+            return List.of("on", "off").stream().filter(value -> value.startsWith(token)).toList();
+        }
+
+        return List.of();
+    }
 }

@@ -246,6 +246,17 @@ public final class AFKAreaPlugin extends JavaPlugin {
         return result.isValid();
     }
 
+    public boolean persistConfig() {
+        try {
+            configFile.saveConfigObject(config);
+            return true;
+        }catch(RuntimeException exception) {
+            getLogger().severe("Failed to persist config.yml: " + exception.getMessage());
+            exception.printStackTrace();
+            return false;
+        }
+    }
+
     private record DatabaseConfigSnapshot(String backend, boolean useQueue, long timeoutMillis, int poolSize, String tablePrefix, String mysqlUrl, String mysqlUser, String mysqlPassword) {
         static DatabaseConfigSnapshot from(AFKAreaConfig config) {
             return new DatabaseConfigSnapshot(config.databaseBackend, config.databaseUseQueue, config.databaseTimeoutMillis, config.databasePoolSize, config.databaseTablePrefix, config.databaseMysqlUrl, config.databaseMysqlUser, config.databaseMysqlPassword);
