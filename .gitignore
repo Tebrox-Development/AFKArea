@@ -1,0 +1,47 @@
+# Maven
+/target/
+dependency-reduced-pom.xml
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+buildNumber.properties
+.flattened-pom.xml
+
+# IntelliJ IDEA
+/.idea/
+*.iml
+*.iws
+*.ipr
+/out/
+
+# Eclipse
+.classpath
+.project
+.settings/
+bin/
+
+# Visual Studio Code
+/.vscode/
+
+# Java
+*.class
+hs_err_pid*
+replay_pid*
+*.log
+
+# Local environment files
+.env
+.env.*
+!.env.example
+
+# Local Minecraft / Paper test servers
+/run/
+/server/
+/test-server/
+
+# Operating system files
+.DS_Store
+Thumbs.db
+Desktop.ini
