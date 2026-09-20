@@ -83,11 +83,19 @@ jobs:
           echo "docs_only=${docs_only}" >> "${GITHUB_OUTPUT}"
 
   runtime-smoke:
-    name: Paper 26.2 / VertexCore
+    name: Paper 26.2 / ${{ matrix.stack }}
     needs: classify
     if: ${{ always() && (needs.classify.result != 'success' || needs.classify.outputs.docs_only != 'true') }}
     runs-on: [self-hosted, X64, resource-heavy]
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - stack: VertexCore
+            enable_worldguard: 'false'
+          - stack: VertexCore + WorldGuard
+            enable_worldguard: 'true'
 
     steps:
       - name: Checkout
@@ -108,4 +116,7 @@ jobs:
           PAPER_VERSION: '26.2'
           PAPER_BUILD: '121'
           VERTEXCORE_VERSION: 'v1.1.0'
+          ENABLE_WORLDGUARD: ${{ matrix.enable_worldguard }}
+          WORLDGUARD_VERSION: '7.0.18'
+          WORLDEDIT_VERSION: '7.4.4'
         run: bash scripts/runtime-smoke.sh
