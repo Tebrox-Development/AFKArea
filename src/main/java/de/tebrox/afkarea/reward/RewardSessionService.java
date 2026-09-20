@@ -120,7 +120,7 @@ public final class RewardSessionService {
         if(intervalSeconds <= 0) return;
 
         long intervalNanos = TimeUnit.SECONDS.toNanos(intervalSeconds);
-        long reference = session.lastRewardAt == 0L ? session.startedAt : session.lastRewardAt;
+        long reference = session.lastRewardAt == 0L ? session.rewardStartedAt : session.lastRewardAt;
 
         if(now - reference < intervalNanos) return;
         session.lastRewardAt = now;
@@ -131,7 +131,7 @@ public final class RewardSessionService {
         List<RewardMilestoneData> milestones = config.getMilestones();
         if(milestones == null || milestones.isEmpty()) return;
 
-        long elapsed = now - session.startedAt;
+        long elapsed = now - session.rewardStartedAt;
         for(int index = 0; index < milestones.size(); index++) {
             if(session.completedMilestones.contains(index)) continue;
             RewardMilestoneData milestone = milestones.get(index);
@@ -229,6 +229,7 @@ public final class RewardSessionService {
         RewardConfigData rewardConfig = area.getRewards();
         long now = System.nanoTime();
         long sessionElapsedNanos = Math.max(0L, now - session.startedAt);
+        long rewardElapsedNanos = Math.max(0L, now - session.rewardStartedAt);
         long sessionSeconds = TimeUnit.NANOSECONDS.toSeconds(sessionElapsedNanos);
 
         if("interval".equalsIgnoreCase(rewardConfig.getScheduleType())) {
@@ -236,7 +237,7 @@ public final class RewardSessionService {
         }
 
         if("milestones".equalsIgnoreCase(rewardConfig.getScheduleType())) {
-            return milestoneProgress(session, rewardConfig, sessionElapsedNanos, sessionSeconds);
+            return milestoneProgress(session, rewardConfig, rewardElapsedNanos, sessionSeconds);
         }
         return Optional.empty();
     }
@@ -288,11 +289,24 @@ public final class RewardSessionService {
         return Math.max(0.0D, Math.min(1.0D, progress));
     }
 
+    public void resetRewardProgress(String areaId) {
+        long now = System.nanoTime();
+
+        for(Session session : sessions.values()) {
+            if(!session.areaId.equals(areaId)) continue;
+
+            session.rewardStartedAt = now;
+            session.lastRewardAt = 0L;
+            session.completedMilestones.clear();
+        }
+    }
+
     private static final class Session {
         private final String areaId;
         private final long startedAt;
         private final long startedAtEpochMillis;
         private long lastRewardAt;
+        private long rewardStartedAt;
 
         private final Set<Integer> completedMilestones = new HashSet<>();
 
@@ -300,6 +314,7 @@ public final class RewardSessionService {
             this.areaId = areaId;
             this.startedAt = startedAt;
             this.startedAtEpochMillis = startedAtEpochMillis;
+            this.rewardStartedAt = startedAt;
         }
     }
 
