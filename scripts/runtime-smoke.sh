@@ -63,45 +63,28 @@ if [[ -z "${VERTEXCORE_JAR}" || ! -f "${VERTEXCORE_JAR}" ]]; then
 fi
 
 if [[ "${ENABLE_WORLDGUARD}" == "true" ]]; then
-  echo "Resolving WorldEdit ${WORLDEDIT_VERSION} and WorldGuard ${WORLDGUARD_VERSION}..."
+  echo "Downloading WorldEdit ${WORLDEDIT_VERSION} and WorldGuard ${WORLDGUARD_VERSION} distribution JARs..."
 
-  mvn -B -ntp \
-    org.apache.maven.plugins:maven-dependency-plugin:3.8.1:copy \
-    -Dartifact="com.sk89q.worldedit:worldedit-bukkit:${WORLDEDIT_VERSION}" \
-    -DoutputDirectory="${DEPENDENCY_DIR}"
+  WORLDEDIT_JAR="${DEPENDENCY_DIR}/worldedit-bukkit-${WORLDEDIT_VERSION}-dist.jar"
+  WORLDGUARD_JAR="${DEPENDENCY_DIR}/worldguard-bukkit-${WORLDGUARD_VERSION}-dist.jar"
 
-  mvn -B -ntp \
-    org.apache.maven.plugins:maven-dependency-plugin:3.8.1:copy \
-    -Dartifact="com.sk89q.worldguard:worldguard-bukkit:${WORLDGUARD_VERSION}" \
-    -DoutputDirectory="${DEPENDENCY_DIR}"
+  curl --fail --silent --show-error --location \
+    --header "User-Agent: ${USER_AGENT}" \
+    "https://ci.enginehub.org/repository/download/bt10/29295%3Aid/worldedit-bukkit-7.4.4-dist.jar?branch=version%2F7.4.x&guest=1" \
+    --output "${WORLDEDIT_JAR}"
 
-  WORLDEDIT_JAR="$(
-    find "${DEPENDENCY_DIR}" \
-      -maxdepth 1 \
-      -type f \
-      -iname 'worldedit-bukkit-*.jar' \
-      -print \
-      -quit
-  )"
+  curl --fail --silent --show-error --location \
+    --header "User-Agent: ${USER_AGENT}" \
+    "https://ci.enginehub.org/repository/download/bt11/29860%3Aid/worldguard-bukkit-7.0.18-dist.jar?branch=version%2F7.0.x&guest=1" \
+    --output "${WORLDGUARD_JAR}"
 
-  WORLDGUARD_JAR="$(
-    find "${DEPENDENCY_DIR}" \
-      -maxdepth 1 \
-      -type f \
-      -iname 'worldguard-bukkit-*.jar' \
-      -print \
-      -quit
-  )"
-
-  if [[ -z "${WORLDEDIT_JAR}" || ! -f "${WORLDEDIT_JAR}" ]]; then
-    echo "WorldEdit runtime artifact could not be resolved." >&2
-    find "${DEPENDENCY_DIR}" -maxdepth 1 -type f -print >&2 || true
+  if [[ ! -s "${WORLDEDIT_JAR}" ]]; then
+    echo "WorldEdit distribution JAR could not be downloaded." >&2
     exit 1
   fi
 
-  if [[ -z "${WORLDGUARD_JAR}" || ! -f "${WORLDGUARD_JAR}" ]]; then
-    echo "WorldGuard runtime artifact could not be resolved." >&2
-    find "${DEPENDENCY_DIR}" -maxdepth 1 -type f -print >&2 || true
+  if [[ ! -s "${WORLDGUARD_JAR}" ]]; then
+    echo "WorldGuard distribution JAR could not be downloaded." >&2
     exit 1
   fi
 fi
