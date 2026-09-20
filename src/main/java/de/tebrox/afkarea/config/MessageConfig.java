@@ -258,6 +258,53 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("display.actionbar.text")
     public String actionBarText = "<gray>Next reward in <aqua><next_reward></aqua></gray>";
+
     @ConfigKey("display.actionbar.no-reward-text")
     public String actionBarNoRewardText = "<gray>AFK Area <yellow><session></yellow></gray>";
+
+    @ConfigKey("reward.admin.info-usage")
+    public String rewardAdminInfoUsage = "<red>Usage: /afkarea reward info <area></red>";
+
+    @ConfigKey("reward.admin.list-usage")
+    public String rewardAdminListUsage = "<red>Usage: /afkarea reward list <area></red>";
+
+    @ConfigKey("reward.admin.add-usage")
+    public String rewardAdminAddUsage = "<red>Usage: /afkarea reward add <area> <id></red>";
+
+    @ConfigKey("reward.admin.remove-usage")
+    public String rewardAdminRemoveUsage = "<red>Usage: /afkarea reward remove <area> <id></red>";
+
+    @ConfigKey("reward.admin.no-config")
+    public String rewardAdminNoConfig = "<yellow>AFK area '<area>' has no reward configuration.</yellow>";
+
+    @ConfigKey("reward.admin.info")
+    public String rewardAdminInfo = "<gold>Reward configuration for '<area>'</gold>\n"
+                    + "<gray>Schedule: <white><schedule></white>\n"
+                    + "Interval: <white><interval></white>\n"
+                    + "Rolls: <white><rolls></white>\n"
+                    + "Allow duplicates: <white><duplicates></white>\n"
+                    + "Rewards: <white><reward_count></white>\n"
+                    + "Milestones: <white><milestone_count></white></gray>";
+
+    @ConfigKey("reward.admin.list-empty")
+    public String rewardAdminListEmpty = "<yellow>AFK area '<area>' has no configured rewards.</yellow>";
+
+    @ConfigKey("reward.admin.list")
+    public String rewardAdminList = "<gold>Rewards for '<area>' (<count>):</gold>\n"
+            + "<gray><rewards></gray>";
+
+    @ConfigKey("reward.admin.invalid-id")
+    public String rewardAdminInvalidId = "<red>Reward IDs may only contain lowercase letters, numbers, '-' and '_'.</red>";
+
+    @ConfigKey("reward.admin.already-exists")
+    public String rewardAdminAlreadyExists = "<red>Reward '<reward>' already exists in AFK area '<area>'.</red>";
+
+    @ConfigKey("reward.admin.unknown")
+    public String rewardAdminUnknown = "<red>Reward '<reward>' does not exist in AFK area '<area>'.</red>";
+
+    @ConfigKey("reward.admin.added")
+    public String rewardAdminAdded = "<green>Added reward '<reward>' to AFK area '<area>'. The reward is disabled until configured.</green>";
+
+    @ConfigKey("reward.admin.removed")
+    public String rewardAdminRemoved = "<green>Removed reward '<reward>' from AFK area '<area>'.</green>";
 }

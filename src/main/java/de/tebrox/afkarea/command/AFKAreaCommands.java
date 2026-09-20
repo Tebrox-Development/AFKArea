@@ -6,6 +6,7 @@ import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
 import de.tebrox.afkarea.command.handler.AreaAdminCommandHandler;
 import de.tebrox.afkarea.command.handler.DiagnosticsCommandHandler;
 import de.tebrox.afkarea.command.handler.HouseholdCommandHandler;
+import de.tebrox.afkarea.command.handler.RewardCommandHandler;
 import de.tebrox.afkarea.command.suggestion.AFKAreaCommandSuggestions;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
@@ -22,6 +23,7 @@ public final class AFKAreaCommands {
     private final DiagnosticsCommandHandler diagnostics;
     private final HouseholdCommandHandler household;
     private final AFKAreaCommandSuggestions suggestions;
+    private final RewardCommandHandler rewards;
 
 
     public AFKAreaCommands(AFKAreaPlugin plugin) {
@@ -30,6 +32,7 @@ public final class AFKAreaCommands {
         this.diagnostics = new DiagnosticsCommandHandler(plugin);
         this.household = new HouseholdCommandHandler(plugin);
         this.suggestions = new AFKAreaCommandSuggestions(plugin);
+        this.rewards = new RewardCommandHandler(plugin);
     }
 
     @VCommand("afkarea")
@@ -169,6 +172,34 @@ public final class AFKAreaCommands {
         diagnostics.stats(ctx);
     }
 
+    @VSub("afkarea reward info")
+    @VDesc("Show the reward configuration of an AFK area")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardInfo(CommandContext ctx) {
+        rewards.info(ctx);
+    }
+
+    @VSub("afkarea reward list")
+    @VDesc("List configured rewards of an AFK area")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardList(CommandContext ctx) {
+        rewards.list(ctx);
+    }
+
+    @VSub("afkarea reward add")
+    @VDesc("Add a reward to an AFK area")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardAdd(CommandContext ctx) {
+        rewards.add(ctx);
+    }
+
+    @VSub("afkarea reward remove")
+    @VDesc("Remove a reward from an AFK area")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardRemove(CommandContext ctx) {
+        rewards.remove(ctx);
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -250,5 +281,25 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea stats")
     public List<String> statsSuggest(CommandSender sender, String alias, String[] args) {
         return suggestions.knownPlayers(sender, args, AFKAreaPermissions.ADMIN_STATS);
+    }
+
+    @VSuggest("afkarea reward info")
+    public List<String> rewardInfoSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardAreaIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward list")
+    public List<String> rewardListSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardAreaIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward add")
+    public List<String> rewardAddSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardAreaIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward remove")
+    public List<String> rewardRemoveSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
     }
 }
