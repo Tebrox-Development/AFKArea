@@ -284,6 +284,13 @@ public final class AFKAreaCommands {
         rewards.duplicates(ctx);
     }
 
+    @VSub("afkarea reward defaultmessage")
+    @VDesc("Set the default reward message of an AFK area")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardDefaultMessage(CommandContext ctx) {
+        rewards.defaultMessage(ctx);
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -414,7 +421,7 @@ public final class AFKAreaCommands {
 
     @VSuggest("afkarea reward permission")
     public List<String> rewardPermissionSuggest(CommandSender sender, String alias, String[] args) {
-        return suggestions.rewardIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+        return suggestions.rewardOptionalNone(sender, args, AFKAreaPermissions.ADMIN_REWARD);
     }
 
     @VSuggest("afkarea reward message")
@@ -445,5 +452,10 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea reward duplicates")
     public List<String> rewardDuplicatesSuggest(CommandSender sender, String alias, String[] args) {
         return suggestions.rewardDuplicates(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward defaultmessage")
+    public List<String> rewardDefaultMessageSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardDefaultMessage(sender, args, AFKAreaPermissions.ADMIN_REWARD);
     }
 }

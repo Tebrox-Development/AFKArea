@@ -241,4 +241,22 @@ public final class AFKAreaCommandSuggestions {
                 .sorted()
                 .toList();
     }
+
+    public List<String> rewardDefaultMessage(CommandSender sender, String[] args, String permission) {
+        if(args.length <= 3) return rewardAreaIds(sender, args, permission);
+        if(!sender.hasPermission(permission) || args.length > 4) return List.of();
+
+        String token = args[3].toLowerCase(Locale.ROOT);
+
+        return "none".startsWith(token) ? List.of("none") : List.of();
+    }
+
+    public List<String> rewardOptionalNone(CommandSender sender, String[] args, String permission) {
+        if(args.length <= 4) return rewardIds(sender, args, permission);
+        if(!sender.hasPermission(permission) || args.length > 5) return List.of();
+
+        String token = args[4].toLowerCase(Locale.ROOT);
+
+        return "none".startsWith(token) ? List.of("none") : List.of();
+    }
 }

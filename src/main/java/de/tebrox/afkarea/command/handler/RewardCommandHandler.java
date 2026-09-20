@@ -50,7 +50,8 @@ public final class RewardCommandHandler {
                 Placeholder.unparsed("rolls", interval ? Integer.toString(config.getRolls()) : "-"),
                 Placeholder.unparsed("duplicates", Boolean.toString(config.isAllowDuplicates())),
                 Placeholder.unparsed("reward_count", Integer.toString(rewardCount)),
-                Placeholder.unparsed("milestone_count", Integer.toString(milestoneCount))
+                Placeholder.unparsed("milestone_count", Integer.toString(milestoneCount)),
+                Placeholder.unparsed("message", config.getMessage() == null ? "global default" : config.getMessage())
         );
     }
 
@@ -709,6 +710,35 @@ public final class RewardCommandHandler {
 
     private void saveSchedule(CommandContext ctx, AreaData area, String areaId, Runnable onSuccess) {
         save(ctx, area, areaId, () -> {plugin.rewardSessionService().resetRewardProgress(areaId);onSuccess.run();});
+    }
+
+    public void defaultMessage(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminDefaultMessageUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String message = String.join(" ", Arrays.copyOfRange(args, 1, args.length)).trim();
+
+        if(message.isBlank()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminDefaultMessageUsage);
+            return;
+        }
+
+        RewardConfigEditTarget target = editConfigTarget(ctx, areaId);
+        if(target == null) return;
+
+        String storedMessage = "none".equalsIgnoreCase(message) ? null : message;
+        target.config().setMessage(storedMessage);
+
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminDefaultMessageSet,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("message", storedMessage == null ? "global default" : storedMessage))
+        );
     }
 
     private record RewardConfigEditTarget(AreaData area, RewardConfigData config) {}

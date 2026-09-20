@@ -284,7 +284,8 @@ public final class MessageConfig implements ConfigObject {
                     + "Rolls: <white><rolls></white>\n"
                     + "Allow duplicates: <white><duplicates></white>\n"
                     + "Rewards: <white><reward_count></white>\n"
-                    + "Milestones: <white><milestone_count></white></gray>";
+                    + "Milestones: <white><milestone_count></white>\n"
+                    + "Default message: <white><message></white></gray>";
 
     @ConfigKey("reward.admin.list-empty")
     public String rewardAdminListEmpty = "<yellow>AFK area '<area>' has no configured rewards.</yellow>";
@@ -420,4 +421,10 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reward.admin.duplicates-set")
     public String rewardAdminDuplicatesSet = "<green>Allow duplicate reward selections for AFK area '<area>': <duplicates>.</green>";
+
+    @ConfigKey("reward.admin.default-message-usage")
+    public String rewardAdminDefaultMessageUsage = "<red>Usage: /afkarea reward defaultmessage <area> <message|none></red>";
+
+    @ConfigKey("reward.admin.default-message-set")
+    public String rewardAdminDefaultMessageSet = "<green>Updated the default reward message of AFK area '<area>': <message></green>";
 }
