@@ -466,6 +466,55 @@ public final class AreaAdminCommandHandler {
                 });
     }
 
+    public void includeChildren(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaIncludeChildrenUsage);
+            return;
+        }
+
+        String id = args[0];
+        String value = args[1].toLowerCase(Locale.ROOT);
+
+        AreaData current = plugin.areaManager().getArea(id);
+        if(current == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        if(!"worldguard".equalsIgnoreCase(current.getRegionType()) || current.getWorldGuardRegion() == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaNotWorldGuard, Placeholder.unparsed("area", id));
+            return;
+        }
+
+        boolean includeChildren;
+        if(value.equals("yes")) {
+            includeChildren = true;
+        }else if(value.equals("no")) {
+            includeChildren = false;
+        }else{
+            plugin.messageService().send(ctx.sender(), plugin.messages().areaIncludeChildrenInvalid);
+            return;
+        }
+
+        WorldGuardRegionData currentRegion = current.getWorldGuardRegion();
+        WorldGuardRegionData updatedRegion = new WorldGuardRegionData(currentRegion.getWorld(), currentRegion.getRegionId(), includeChildren);
+
+        AreaData updated = current.copy();
+        updated.setWorldGuardRegion(updatedRegion);
+
+        plugin.areaManager().saveArea(updated, () -> plugin.messageService().send(ctx.sender(), plugin.messages().areaIncludeChildrenSet, Placeholder.unparsed("area", id), Placeholder.unparsed("value", includeChildren ? "yes" : "no")
+                ),
+                error -> {
+                    plugin.getLogger().severe("Failed to update child-region handling for AFK area '" + id + "': " + error.getMessage());
+                    error.printStackTrace();
+
+                    plugin.messageService().send(ctx.sender(), plugin.messages().areaSaveFailed, Placeholder.unparsed("area", id)
+                    );
+                }
+        );
+    }
+
     private void sendSelectionPosition(Player player, String message, SelectionPoint point) {
         plugin.messageService().send(
                 player,

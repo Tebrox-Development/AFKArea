@@ -275,4 +275,31 @@ public final class AFKAreaCommandSuggestions {
 
         return List.of();
     }
+
+    public List<String> includeChildren(CommandSender sender, String[] args, String permission) {
+        if(!sender.hasPermission(permission)) return List.of();
+
+        if(args.length <= 2) {
+            String token = args.length >= 2 ? args[1] : "";
+            String normalized = token.toLowerCase(Locale.ROOT);
+
+            return plugin.areaManager()
+                    .getAreas()
+                    .stream()
+                    .filter(area -> "worldguard".equalsIgnoreCase(area.getRegionType()))
+                    .map(AreaData::getUniqueId)
+                    .filter(Objects::nonNull)
+                    .filter(id -> !id.isBlank())
+                    .filter(id -> id.toLowerCase(Locale.ROOT).startsWith(normalized))
+                    .sorted(String.CASE_INSENSITIVE_ORDER)
+                    .toList();
+        }
+
+        if(args.length == 3) {
+            String token = args[2].toLowerCase(Locale.ROOT);
+            return List.of("yes", "no").stream().filter(value -> value.startsWith(token)).toList();
+        }
+
+        return List.of();
+    }
 }

@@ -297,6 +297,13 @@ public final class AFKAreaCommands {
         display.display(ctx);
     }
 
+    @VSub("afkarea includechildren")
+    @VDesc("Include WorldGuard child regions in an AFK area")
+    @VPerm(AFKAreaPermissions.ADMIN_INCLUDE_CHILDREN)
+    public void includeChildren(CommandContext ctx) {
+        areaAdmin.includeChildren(ctx);
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -468,5 +475,10 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea display")
     public List<String> displaySuggest(CommandSender sender, String alias, String[] args) {
         return suggestions.display(sender, args, AFKAreaPermissions.ADMIN_DISPLAY);
+    }
+
+    @VSuggest("afkarea includechildren")
+    public List<String> includeChildrenSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.includeChildren(sender, args, AFKAreaPermissions.ADMIN_INCLUDE_CHILDREN);
     }
 }

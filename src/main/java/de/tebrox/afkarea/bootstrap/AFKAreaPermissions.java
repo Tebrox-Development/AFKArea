@@ -29,6 +29,7 @@ public final class AFKAreaPermissions {
     public static final String ADMIN_STATS = ADMIN + "stats";
     public static final String ADMIN_REWARD = ADMIN + "reward";
     public static final String ADMIN_DISPLAY = ADMIN + "display";
+    public static final String ADMIN_INCLUDE_CHILDREN = ADMIN + "includechildren";
 
     public static final String STAFF_SEE_HIDDEN = STAFF + "see-hidden";
 

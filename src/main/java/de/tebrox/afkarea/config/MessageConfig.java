@@ -442,4 +442,13 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("display.admin.save-failed")
     public String displayAdminSaveFailed = "<red>Failed to save the display setting. Check the server console.</red>";
+
+    @ConfigKey("area.includechildren-usage")
+    public String areaIncludeChildrenUsage = "<red>Usage: /afkarea includechildren <id> <yes|no></red>";
+
+    @ConfigKey("area.includechildren-invalid")
+    public String areaIncludeChildrenInvalid = "<red>Include children must be either yes or no.</red>";
+
+    @ConfigKey("area.includechildren-set")
+    public String areaIncludeChildrenSet = "<green>Include child regions for AFK area '<area>' is now <value>.</green>";
 }
