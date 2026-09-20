@@ -51,6 +51,7 @@ public final class AFKAreaPlaceholderExpansion extends PlaceholderExpansion {
         switch (params) {
             case "state": return state.name().toLowerCase();
             case "is_afk": return Boolean.toString(plugin.playerStateService().isAfk(playerId));
+            case "tab_suffix": return plugin.tabListService().getTabSuffix(state);
             case "idle_seconds": return Long.toString(plugin.activityService().getIdleDuration(playerId).toSeconds());
             case "area_id": {
                 String areaId = plugin.areaSessionService().getAreaId(playerId);

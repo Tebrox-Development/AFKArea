@@ -15,6 +15,7 @@ import de.tebrox.afkarea.display.*;
 import de.tebrox.afkarea.household.HouseholdData;
 import de.tebrox.afkarea.household.HouseholdManager;
 import de.tebrox.afkarea.integration.PlaceholderApiIntegration;
+import de.tebrox.afkarea.integration.TabIntegration;
 import de.tebrox.afkarea.integration.WorldGuardIntegration;
 import de.tebrox.afkarea.integration.placeholder.AFKAreaPlaceholderExpansion;
 import de.tebrox.afkarea.message.MessageService;
@@ -75,6 +76,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
 
     private WorldGuardIntegration worldGuardIntegration;
     private PlaceholderApiIntegration placeholderApiIntegration;
+    private TabIntegration tabIntegration;
 
     private BossBarDisplayService bossBarDisplayService;
     private ActionBarDisplayService actionBarDisplayService;
@@ -83,6 +85,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
     public void onEnable() {
         worldGuardIntegration = WorldGuardIntegration.detect(this);
         placeholderApiIntegration = PlaceholderApiIntegration.detect(this);
+        tabIntegration = TabIntegration.detec(this);
 
         if(worldGuardIntegration.isAvailable()) {
             getLogger().info("WorldGuard integration is available");
@@ -126,7 +129,7 @@ public final class AFKAreaPlugin extends JavaPlugin {
         playerStateService = new PlayerStateService();
         activityService = new ActivityService();
 
-        tabListService = new TabListService(() -> messages, messageService);
+        tabListService = new TabListService(() -> messages, messageService, tabIntegration);
         visibilityService = new AreaVisibilityService(this, playerStateService, () -> config, tabListService);
 
         rewardService = new RewardService(this, () -> messages, messageService);
@@ -165,6 +168,16 @@ public final class AFKAreaPlugin extends JavaPlugin {
             getLogger().info("PlaceholderAPI integration is available");
         }else{
             getLogger().info("PlaceholderAPI not found - PlaceholderAPI integration is disabled");
+        }
+
+        if(tabIntegration.isAvailable()) {
+            if(placeholderApiIntegration.isAvailable()) {
+                getLogger().info("TAB detected - native AFK tab markers are disabled. use %afkarea_tab_suffix% in the TAB configuration");
+            }else{
+                getLogger().warning("TAB detected - native AFK tab markers are disabled, but PlaceholderAPI is not available");
+            }
+        }else{
+            getLogger().info("TAB not found - using native AFK tab markers");
         }
 
         new Metrics(this, BSTATS_PLUGIN_ID);

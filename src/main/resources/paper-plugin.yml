@@ -2,7 +2,6 @@ name: AFKArea
 version: "${project.version}"
 main: de.tebrox.afkarea.bootstrap.AFKAreaPlugin
 api-version: "1.21"
-load: STARTUP
 
 authors:
   - Tebrox
@@ -29,3 +28,8 @@ dependencies:
       load: BEFORE
       required: false
       join-classpath: true
+
+    TAB:
+      load: BEFORE
+      required: false
+      join-classpath: false

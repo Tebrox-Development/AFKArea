@@ -1,7 +1,9 @@
 package de.tebrox.afkarea.display;
 
 import de.tebrox.afkarea.config.MessageConfig;
+import de.tebrox.afkarea.integration.TabIntegration;
 import de.tebrox.afkarea.message.MessageService;
+import de.tebrox.afkarea.state.PlayerState;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
 import org.bukkit.entity.Player;
@@ -12,12 +14,14 @@ import java.util.function.Supplier;
 public final class TabListService {
     private final Supplier<MessageConfig> messages;
     private final MessageService messageService;
+    private final TabIntegration tabIntegration;
 
     private final Map<UUID, MarkerState> markers = new HashMap<>();
 
-    public TabListService(Supplier<MessageConfig> messages, MessageService messageService) {
+    public TabListService(Supplier<MessageConfig> messages, MessageService messageService, TabIntegration tabIntegration) {
         this.messages = messages;
         this.messageService = messageService;
+        this.tabIntegration = tabIntegration;
     }
 
     public void applyAfk(Player player) {
@@ -29,6 +33,11 @@ public final class TabListService {
     }
 
     private void applyMarker(Player player, String format, MarkerType type) {
+        if(tabIntegration.isAvailable()) {
+            restoreNativeMarker(player);
+            return;
+        }
+
         if(format == null || format.isBlank()) {
             clearMarker(player, type);
             return;
@@ -63,6 +72,28 @@ public final class TabListService {
         if(player.playerListName().equals(state.applied())) {
             player.playerListName(state.original());
         }
+    }
+
+    private void restoreNativeMarker(Player player) {
+        MarkerState state = markers.remove(player.getUniqueId());
+        if(state == null) return;
+
+        if(player.playerListName().equals(state.applied())){
+            player.playerListName(state.original);
+        }
+    }
+
+    public String getTabSuffix(PlayerState state) {
+        return switch(state) {
+            case AFK -> extractSuffix(messages.get().afkTabFormat);
+            case AFK_AREA -> extractSuffix(messages.get().afkAreaTabFormat);
+            case ACTIVE -> "";
+        };
+    }
+
+    public String extractSuffix(String format) {
+        if(format == null || format.isBlank()) return "";
+        return format.replace("<player>", "").trim();
     }
 
     public void refreshAfk(Player player) {
