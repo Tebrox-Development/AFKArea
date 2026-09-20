@@ -6,12 +6,11 @@ import de.tebrox.afkarea.reward.data.CommandRewardData;
 import de.tebrox.afkarea.reward.data.RewardConfigData;
 import de.tebrox.vertexCore.command.api.CommandContext;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.bukkit.command.CommandSender;
 
 import java.util.*;
 
 public final class RewardCommandHandler {
-    private AFKAreaPlugin plugin;
+    private final AFKAreaPlugin plugin;
 
     public RewardCommandHandler(AFKAreaPlugin plugin) {
         this.plugin = plugin;
@@ -118,7 +117,7 @@ public final class RewardCommandHandler {
         rewards.add(reward);
         config.setRewards(rewards);
 
-        save(updated, areaId, () -> plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminAdded, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId)));
+        save(ctx, updated, areaId, () -> plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminAdded, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId)));
     }
 
     public void remove(CommandContext ctx) {
@@ -151,7 +150,7 @@ public final class RewardCommandHandler {
         rewards.removeIf(reward -> reward != null && rewardId.equalsIgnoreCase(reward.getId()));
         config.setRewards(rewards);
 
-        save(updated, areaId, () -> plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminRemoved, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId)));
+        save(ctx, updated, areaId, () -> plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminRemoved, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId)));
     }
 
     private CommandRewardData findReward(RewardConfigData config, String rewardId) {
@@ -170,12 +169,196 @@ public final class RewardCommandHandler {
         return String.format(Locale.ROOT, "- %s | %s | weight %.2f | commands %d | permission %s", id, reward.isEnabled() ? "enabled" : "disabled", reward.getWeight(), commandCount, permission);
     }
 
-    private void save(AreaData area, String areaId, Runnable onSuccess) {
+    private void save(CommandContext ctx, AreaData area, String areaId, Runnable onSuccess) {
         plugin.areaManager().saveArea(area, onSuccess,
                 error -> {
                     plugin.getLogger().severe("Failed to update rewards for AFK area '" + areaId + "': " + error.getMessage());
                     error.printStackTrace();
+                    plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminSaveFailed, Placeholder.unparsed("area", areaId));
                 }
         );
     }
+
+    public void enable(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if(args.length < 3) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminEnableUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String rewardId = args[1];
+
+        boolean enabled;
+
+        if("true".equalsIgnoreCase(args[2])) {
+            enabled = true;
+        }else if("false".equalsIgnoreCase(args[2])) {
+            enabled = false;
+        }else{
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminInvalidEnabled);
+            return;
+        }
+
+        RewardEditTarget target = editTarget(ctx, areaId, rewardId);
+        if(target == null) return;
+
+        if(enabled && !hasCommands(target.reward())) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCannotEnable, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId));
+            return;
+        }
+
+        target.reward().setEnabled(enabled);
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminEnabled,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("reward", rewardId),
+                        Placeholder.unparsed("enabled", Boolean.toString(enabled))
+                )
+        );
+    }
+
+    public void commandList(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 2) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCommandListUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String rewardId = args[1];
+
+        AreaData area = plugin.areaManager().getArea(areaId);
+        if(area == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", areaId));
+            return;
+        }
+
+        CommandRewardData reward = findReward(area.getRewards(), rewardId);
+        if(reward == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminUnknown, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId));
+            return;
+        }
+
+        if(!hasCommands(reward)) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCommandListEmpty, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId));
+            return;
+        }
+
+        List<String> entries = new ArrayList<>();
+        for(int index = 0; index < reward.getCommands().size(); index++) {
+            entries.add((index + 1) + ". " + reward.getCommands().get(index));
+        }
+
+        plugin.messageService().send(
+                ctx.sender(),
+                plugin.messages().rewardAdminCommandList,
+                Placeholder.unparsed("area", areaId),
+                Placeholder.unparsed("reward", rewardId),
+                Placeholder.unparsed("commands", String.join("\n", entries)
+                )
+        );
+    }
+
+    public void commandAdd(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+
+        if(args.length < 3) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCommandAddUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String rewardId = args[1];
+        String command = String.join(" ", Arrays.copyOfRange(args, 2, args.length)).trim();
+
+        if(command.isBlank()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCommandAddUsage);
+            return;
+        }
+
+        RewardEditTarget target = editTarget(ctx, areaId, rewardId);
+
+        if(target == null) return;
+        List<String> commands = new ArrayList<>(target.reward().getCommands() == null ? List.of() : target.reward().getCommands());
+
+        commands.add(command);
+        target.reward().setCommands(commands);
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminCommandAdded,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("reward", rewardId),
+                        Placeholder.unparsed("command", command)
+                )
+        );
+    }
+
+    public void commandRemove(CommandContext ctx) {
+        String[] args = ctx.rawArgs();
+        if(args.length < 3) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCommandRemoveUsage);
+            return;
+        }
+
+        String areaId = args[0];
+        String rewardId = args[1];
+        int index;
+
+        try {
+            index = Integer.parseInt(args[2]);
+        }catch(NumberFormatException exception) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCommandInvalidIndex);
+            return;
+        }
+
+        RewardEditTarget target = editTarget(ctx, areaId, rewardId);
+
+        if(target == null) return;
+        List<String> commands = new ArrayList<>(target.reward().getCommands() == null ? List.of() : target.reward().getCommands());
+        if(index < 1 || index > commands.size()) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminCommandInvalidIndex);
+            return;
+        }
+
+        String removed = commands.remove(index - 1);
+        target.reward().setCommands(commands);
+        if(commands.isEmpty()) target.reward().setEnabled(false);
+
+        save(ctx, target.area(), areaId, () -> plugin.messageService().send(
+                        ctx.sender(),
+                        plugin.messages().rewardAdminCommandRemoved,
+                        Placeholder.unparsed("area", areaId),
+                        Placeholder.unparsed("reward", rewardId),
+                        Placeholder.unparsed("command", removed))
+        );
+    }
+
+    private RewardEditTarget editTarget(CommandContext ctx, String areaId, String rewardId) {
+        AreaData current = plugin.areaManager().getArea(areaId);
+        if(current == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().unknownArea, Placeholder.unparsed("area", areaId));
+            return null;
+        }
+
+        if(findReward(current.getRewards(), rewardId) == null) {
+            plugin.messageService().send(ctx.sender(), plugin.messages().rewardAdminUnknown, Placeholder.unparsed("area", areaId), Placeholder.unparsed("reward", rewardId));
+            return null;
+        }
+
+        AreaData updated = current.copy();
+        CommandRewardData reward = findReward(updated.getRewards(), rewardId);
+
+        return new RewardEditTarget(updated, reward);
+    }
+
+    private boolean hasCommands(CommandRewardData reward) {
+        if(reward.getCommands() == null) return false;
+        return reward.getCommands().stream().anyMatch(command -> command != null && !command.isBlank());
+    }
+
+    private record RewardEditTarget(AreaData area, CommandRewardData reward
+    ) {}
 }

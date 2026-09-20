@@ -200,6 +200,34 @@ public final class AFKAreaCommands {
         rewards.remove(ctx);
     }
 
+    @VSub("afkarea reward enable")
+    @VDesc("Enable or disable a reward")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardEnable(CommandContext ctx) {
+        rewards.enable(ctx);
+    }
+
+    @VSub("afkarea reward command list")
+    @VDesc("List commands of a reward")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardCommandList(CommandContext ctx) {
+        rewards.commandList(ctx);
+    }
+
+    @VSub("afkarea reward command add")
+    @VDesc("Add a command to a reward")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardCommandAdd(CommandContext ctx) {
+        rewards.commandAdd(ctx);
+    }
+
+    @VSub("afkarea reward command remove")
+    @VDesc("Remove a command from a reward")
+    @VPerm(AFKAreaPermissions.ADMIN_REWARD)
+    public void rewardCommandRemove(CommandContext ctx) {
+        rewards.commandRemove(ctx);
+    }
+
     @VSub("afkarea household link")
     @VDesc("Link two player accounts as household members")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
@@ -301,5 +329,25 @@ public final class AFKAreaCommands {
     @VSuggest("afkarea reward remove")
     public List<String> rewardRemoveSuggest(CommandSender sender, String alias, String[] args) {
         return suggestions.rewardIds(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward enable")
+    public List<String> rewardEnableSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardEnable(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward command list")
+    public List<String> rewardCommandListSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardCommandTargets(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward command add")
+    public List<String> rewardCommandAddSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardCommandTargets(sender, args, AFKAreaPermissions.ADMIN_REWARD);
+    }
+
+    @VSuggest("afkarea reward command remove")
+    public List<String> rewardCommandRemoveSuggest(CommandSender sender, String alias, String[] args) {
+        return suggestions.rewardCommandRemove(sender, args, AFKAreaPermissions.ADMIN_REWARD);
     }
 }

@@ -307,4 +307,44 @@ public final class MessageConfig implements ConfigObject {
 
     @ConfigKey("reward.admin.removed")
     public String rewardAdminRemoved = "<green>Removed reward '<reward>' from AFK area '<area>'.</green>";
+
+    @ConfigKey("reward.admin.enable-usage")
+    public String rewardAdminEnableUsage = "<red>Usage: /afkarea reward enable <area> <id> <true|false></red>";
+
+    @ConfigKey("reward.admin.invalid-enabled")
+    public String rewardAdminInvalidEnabled = "<red>Enabled must be either true or false.</red>";
+
+    @ConfigKey("reward.admin.cannot-enable")
+    public String rewardAdminCannotEnable = "<red>Reward '<reward>' cannot be enabled because it has no commands.</red>";
+
+    @ConfigKey("reward.admin.enabled")
+    public String rewardAdminEnabled = "<green>Reward '<reward>' in AFK area '<area>' enabled: <enabled>.</green>";
+
+    @ConfigKey("reward.admin.command-list-usage")
+    public String rewardAdminCommandListUsage = "<red>Usage: /afkarea reward command list <area> <id></red>";
+
+    @ConfigKey("reward.admin.command-add-usage")
+    public String rewardAdminCommandAddUsage = "<red>Usage: /afkarea reward command add <area> <id> <command...></red>";
+
+    @ConfigKey("reward.admin.command-remove-usage")
+    public String rewardAdminCommandRemoveUsage = "<red>Usage: /afkarea reward command remove <area> <id> <index></red>";
+
+    @ConfigKey("reward.admin.command-list-empty")
+    public String rewardAdminCommandListEmpty = "<yellow>Reward '<reward>' has no commands.</yellow>";
+
+    @ConfigKey("reward.admin.command-list")
+    public String rewardAdminCommandList = "<gold>Commands for reward '<reward>' in '<area>':</gold>\n"
+                    + "<gray><commands></gray>";
+
+    @ConfigKey("reward.admin.command-added")
+    public String rewardAdminCommandAdded = "<green>Added command to reward '<reward>': <white><command></white></green>";
+
+    @ConfigKey("reward.admin.command-invalid-index")
+    public String rewardAdminCommandInvalidIndex = "<red>Command index must reference an existing reward command.</red>";
+
+    @ConfigKey("reward.admin.command-removed")
+    public String rewardAdminCommandRemoved = "<green>Removed command from reward '<reward>': <white><command></white></green>";
+
+    @ConfigKey("reward.admin.save-failed")
+    public String rewardAdminSaveFailed = "<red>Failed to update rewards for AFK area '<area>'. Check the server console.</red>";
 }
