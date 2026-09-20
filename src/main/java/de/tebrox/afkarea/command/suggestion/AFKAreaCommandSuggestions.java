@@ -1,7 +1,6 @@
 package de.tebrox.afkarea.command.suggestion;
 
 import de.tebrox.afkarea.area.AreaData;
-import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
@@ -33,7 +32,7 @@ public final class AFKAreaCommandSuggestions {
     }
 
     public List<String> createTypes(CommandSender sender, String[] args, String permission) {
-        if(!sender.hasPermission(AFKAreaPermissions.ADMIN_CREATE)) {
+        if(!sender.hasPermission(permission)) {
             return List.of();
         }
 

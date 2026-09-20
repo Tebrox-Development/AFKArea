@@ -1,39 +1,19 @@
 package de.tebrox.afkarea.command;
 
-import de.tebrox.afkarea.area.AreaData;
-import de.tebrox.afkarea.area.AreaEntrySource;
 import de.tebrox.afkarea.area.AreaTeleportService;
-import de.tebrox.afkarea.area.TeleportData;
-import de.tebrox.afkarea.area.selection.CuboidSelection;
-import de.tebrox.afkarea.area.selection.SelectionPoint;
 import de.tebrox.afkarea.bootstrap.AFKAreaPermissions;
 import de.tebrox.afkarea.bootstrap.AFKAreaPlugin;
 import de.tebrox.afkarea.command.handler.AreaAdminCommandHandler;
 import de.tebrox.afkarea.command.handler.DiagnosticsCommandHandler;
 import de.tebrox.afkarea.command.handler.HouseholdCommandHandler;
 import de.tebrox.afkarea.command.suggestion.AFKAreaCommandSuggestions;
-import de.tebrox.afkarea.region.data.CuboidRegionData;
-import de.tebrox.afkarea.region.data.WorldGuardRegionData;
-import de.tebrox.afkarea.reward.RewardSessionService;
-import de.tebrox.afkarea.state.PlayerState;
-import de.tebrox.afkarea.stats.AFKPlayerStatsData;
 import de.tebrox.vertexCore.command.annotation.*;
 import de.tebrox.vertexCore.command.api.CommandContext;
-import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.OfflinePlayer;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.permissions.PermissionDefault;
 
-import java.awt.geom.Area;
-import java.time.Instant;
-import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
 import java.util.*;
-
-import static de.tebrox.afkarea.util.DurationFormatter.formatDuration;
 
 public final class AFKAreaCommands {
     private final AFKAreaPlugin plugin;
@@ -214,7 +194,7 @@ public final class AFKAreaCommands {
     @VDesc("List all configured households")
     @VPerm(AFKAreaPermissions.ADMIN_HOUSEHOLD)
     public void householdList(CommandContext ctx) {
-        household.link(ctx);
+        household.list(ctx);
     }
 
     @VSuggest("afkarea redefine")
